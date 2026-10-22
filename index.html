@@ -35,9 +35,9 @@
   </header>
   <main>
     <div class="tabs" role="tablist" data-label="tablist">
-      <button id="tab-split" role="tab" type="button" aria-controls="panel-split" aria-selected="true" data-i18n="splitTab"></button>
-      <button id="tab-restore" role="tab" type="button" aria-controls="panel-restore" aria-selected="false" data-i18n="restoreTab"></button>
-      <button id="tab-guide" role="tab" type="button" aria-controls="panel-guide" aria-selected="false" data-i18n="guideTab"></button>
+      <button id="tab-split" role="tab" type="button" aria-controls="panel-split" aria-selected="true" data-i18n="splitTab" data-label="splitTab"></button>
+      <button id="tab-restore" role="tab" type="button" aria-controls="panel-restore" aria-selected="false" data-i18n="restoreTab" data-label="restoreTab"></button>
+      <button id="tab-guide" role="tab" type="button" aria-controls="panel-guide" aria-selected="false" data-i18n="guideTab" data-label="guideTab"></button>
     </div>
     <section id="panel-split" class="panel" role="tabpanel" aria-labelledby="tab-split">
       <h2 data-i18n="splitTitle"></h2>
@@ -74,10 +74,40 @@
     <section id="panel-restore" class="panel" role="tabpanel" aria-labelledby="tab-restore" hidden>
       <h2 data-i18n="restoreTitle"></h2>
       <p data-i18n="restoreIntro"></p>
+      <label class="stack"><span data-i18n="sharesLabel"></span>
+        <textarea id="restore-input" rows="7" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></label>
+      <div class="actions"><button id="restore-button" type="button" data-i18n="restoreAction"></button>
+        <button id="camera-button" type="button" data-i18n="cameraAction"></button>
+        <button id="stop-camera" type="button" data-i18n="stopCamera" hidden></button>
+        <button id="clear-restore" type="button" data-i18n="clear"></button></div>
+      <div id="camera-view" hidden><video id="camera-video" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" hidden></canvas></div>
+      <p id="camera-status" role="status"></p>
+      <p id="restore-status" role="status" aria-live="polite"></p>
+      <div class="table-frame"><table id="check-table" hidden><caption data-i18n="checkCaption"></caption>
+        <thead><tr><th data-i18n="shareColumn"></th><th data-i18n="formatColumn"></th>
+          <th>CRC</th><th data-i18n="setColumn"></th><th>k / n</th><th>x</th></tr></thead>
+        <tbody id="check-rows"></tbody></table></div>
+      <div id="restored" class="restored" hidden>
+        <h3 data-i18n="restoredTitle"></h3><p id="restored-mask">••••••</p>
+        <pre id="restored-value" hidden></pre>
+        <button id="reveal" type="button" data-i18n="reveal"></button>
+      </div>
     </section>
     <section id="panel-guide" class="panel" role="tabpanel" aria-labelledby="tab-guide" hidden>
       <h2 data-i18n="guideTitle"></h2>
       <p data-i18n="guideIntro"></p>
+      <div class="form-grid"><label><span data-i18n="kLabel"></span><input id="guide-k" type="number" min="2" max="16" value="2"></label>
+        <label><span data-i18n="nLabel"></span><input id="guide-n" type="number" min="2" max="16" value="3"></label></div>
+      <p id="guide-threshold" role="status"></p>
+      <h3 data-i18n="guideExamplesTitle"></h3><p data-i18n="guideExamples"></p>
+      <h3 data-i18n="guideCasesTitle"></h3><p data-i18n="guideCases"></p>
+      <h3 data-i18n="guideAvoidTitle"></h3><p class="warning" data-i18n="guideAvoid"></p>
+      <h3 data-i18n="guideInspectTitle"></h3><p data-i18n="guideInspect"></p>
+      <h3 data-i18n="guideSurviveTitle"></h3><p data-i18n="guideSurvive"></p>
+      <h3 data-i18n="guideLimitsTitle"></h3><ul>
+        <li data-i18n="guideLimit1"></li><li data-i18n="guideLimit2"></li><li data-i18n="guideLimit3"></li>
+        <li data-i18n="guideLimit4"></li><li data-i18n="guideLimit5"></li></ul>
     </section>
   </main>
   <footer><span>Scatter Seeds · MIT · Day124</span><a href="https://github.com/ipusiron/scatter-seeds">GitHub</a></footer>
