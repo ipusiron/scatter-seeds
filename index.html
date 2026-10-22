@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; connect-src 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Scatter Seeds splits a secret into printable Shamir shares and restores it from a threshold set.">
+  <title>Scatter Seeds</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="style.css">
+  <script src="sha256-core.js" defer></script>
+  <script src="sss-core.js" defer></script>
+  <script src="bip39-english.js" defer></script>
+  <script src="bip39.js" defer></script>
+  <script src="vendor/qrcode.min.js" defer></script>
+  <script src="vendor/jsQR.js" defer></script>
+  <script src="qr.js" defer></script>
+  <script src="messages.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <header class="page-header">
+    <p class="eyebrow">DAY124 · SPLIT / RESTORE / STORE</p>
+    <div class="masthead">
+      <h1>Scatter <span>Seeds</span></h1>
+      <div class="header-tools">
+        <button id="theme" class="icon-button" type="button" data-label="theme">◐</button>
+        <button id="language" class="icon-button" type="button" data-label="language">EN</button>
+        <button id="help" class="icon-button" type="button" data-label="help" aria-haspopup="dialog">?</button>
+      </div>
+    </div>
+    <p class="subtitle" data-i18n="subtitle"></p>
+    <p class="privacy" data-i18n="privacy"></p>
+  </header>
+  <main>
+    <div class="tabs" role="tablist" data-label="tablist">
+      <button id="tab-split" role="tab" type="button" aria-controls="panel-split" aria-selected="true" data-i18n="splitTab" data-label="splitTab"></button>
+      <button id="tab-restore" role="tab" type="button" aria-controls="panel-restore" aria-selected="false" data-i18n="restoreTab" data-label="restoreTab"></button>
+      <button id="tab-guide" role="tab" type="button" aria-controls="panel-guide" aria-selected="false" data-i18n="guideTab" data-label="guideTab"></button>
+    </div>
+    <section id="panel-split" class="panel" role="tabpanel" aria-labelledby="tab-split">
+      <h2 data-i18n="splitTitle"></h2>
+      <p data-i18n="splitIntro"></p>
+      <div class="form-grid">
+        <label><span data-i18n="kindLabel"></span>
+          <select id="secret-kind" autocomplete="off"><option value="text" data-i18n="kindText"></option>
+            <option value="bytes" data-i18n="kindBytes"></option><option value="bip39" data-i18n="kindBip39"></option></select></label>
+        <label class="full"><span data-i18n="secretLabel"></span>
+          <textarea id="secret-input" rows="5" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></label>
+        <label><span data-i18n="kLabel"></span><input id="split-k" type="number" min="2" max="16" value="2" inputmode="numeric"></label>
+        <label><span data-i18n="nLabel"></span><input id="split-n" type="number" min="2" max="16" value="3" inputmode="numeric"></label>
+        <label class="full"><span data-i18n="labelLabel"></span><input id="share-label" type="text" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+        <label><span data-i18n="dateLabel"></span><input id="print-date" type="date"></label>
+      </div>
+      <p class="note" data-i18n="labelNote"></p>
+      <p id="threshold-hint" class="note" role="status"></p>
+      <p id="bip39-note" class="note" data-i18n="bip39Note" hidden></p>
+      <div class="actions"><button id="split-button" type="button" data-i18n="splitAction"></button>
+        <button id="clear-split" type="button" data-i18n="clear"></button></div>
+      <p id="split-status" role="status" aria-live="polite"></p>
+      <div id="split-progress" hidden><progress id="progress-bar" value="0" max="1"></progress><span id="progress-text"></span></div>
+      <div id="print-controls" hidden>
+        <p class="warning" data-i18n="printWarning"></p>
+        <label class="choice"><input id="print-instructions" type="checkbox"><span data-i18n="printInstructions"></span></label>
+        <button id="print-button" type="button" data-i18n="printAction"></button>
+      </div>
+      <div id="share-cards" class="share-cards"></div>
+      <article id="instruction-page" class="certificate instructions" hidden>
+        <h2 data-i18n="instructionTitle"></h2><p data-i18n="instructionBody"></p>
+        <p>https://ipusiron.github.io/scatter-seeds/</p>
+      </article>
+    </section>
+    <section id="panel-restore" class="panel" role="tabpanel" aria-labelledby="tab-restore" hidden>
+      <h2 data-i18n="restoreTitle"></h2>
+      <p data-i18n="restoreIntro"></p>
+      <label class="stack"><span data-i18n="sharesLabel"></span>
+        <textarea id="restore-input" rows="7" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></label>
+      <div class="actions"><button id="restore-button" type="button" data-i18n="restoreAction"></button>
+        <button id="camera-button" type="button" data-i18n="cameraAction"></button>
+        <button id="stop-camera" type="button" data-i18n="stopCamera" hidden></button>
+        <button id="clear-restore" type="button" data-i18n="clear"></button></div>
+      <div id="camera-view" hidden><video id="camera-video" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" hidden></canvas></div>
+      <p id="camera-status" role="status"></p>
+      <p id="restore-status" role="status" aria-live="polite"></p>
+      <div class="table-frame"><table id="check-table" hidden><caption data-i18n="checkCaption"></caption>
+        <thead><tr><th data-i18n="shareColumn"></th><th data-i18n="formatColumn"></th>
+          <th>CRC</th><th data-i18n="setColumn"></th><th>k / n</th><th>x</th></tr></thead>
+        <tbody id="check-rows"></tbody></table></div>
+      <div id="restored" class="restored" hidden>
+        <h3 data-i18n="restoredTitle"></h3><p id="restored-mask">••••••</p>
+        <pre id="restored-value" hidden></pre>
+        <button id="reveal" type="button" data-i18n="reveal"></button>
+      </div>
+    </section>
+    <section id="panel-guide" class="panel" role="tabpanel" aria-labelledby="tab-guide" hidden>
+      <h2 data-i18n="guideTitle"></h2>
+      <p data-i18n="guideIntro"></p>
+      <div class="form-grid"><label><span data-i18n="kLabel"></span><input id="guide-k" type="number" min="2" max="16" value="2"></label>
+        <label><span data-i18n="nLabel"></span><input id="guide-n" type="number" min="2" max="16" value="3"></label></div>
+      <p id="guide-threshold" role="status"></p>
+      <h3 data-i18n="guideExamplesTitle"></h3><p data-i18n="guideExamples"></p>
+      <h3 data-i18n="guideCasesTitle"></h3><p data-i18n="guideCases"></p>
+      <h3 data-i18n="guideAvoidTitle"></h3><p class="warning" data-i18n="guideAvoid"></p>
+      <h3 data-i18n="guideInspectTitle"></h3><p data-i18n="guideInspect"></p>
+      <h3 data-i18n="guideSurviveTitle"></h3><p data-i18n="guideSurvive"></p>
+      <h3 data-i18n="guideLimitsTitle"></h3><ul>
+        <li data-i18n="guideLimit1"></li><li data-i18n="guideLimit2"></li><li data-i18n="guideLimit3"></li>
+        <li data-i18n="guideLimit4"></li><li data-i18n="guideLimit5"></li></ul>
+    </section>
+  </main>
+  <footer><span>Scatter Seeds · MIT · Day124</span><a href="https://github.com/ipusiron/scatter-seeds">GitHub</a></footer>
+  <dialog id="help-dialog" aria-labelledby="help-title">
+    <h2 id="help-title" data-i18n="helpTitle"></h2>
+    <p data-i18n="helpBody"></p>
+    <button id="help-close" type="button" data-i18n="close"></button>
+  </dialog>
+</body>
+</html>

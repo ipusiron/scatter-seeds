@@ -1,0 +1,175 @@
+{
+  "checks": {
+    "crc32_123456789": "cbf43926",
+    "words": 2048,
+    "bip39_official": [
+      {
+        "e": "00000000000000000000000000000000",
+        "ok": true
+      },
+      {
+        "e": "7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f",
+        "ok": true
+      },
+      {
+        "e": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "ok": true
+      }
+    ],
+    "bip39_badChecksum": "checksum"
+  },
+  "vectors": [
+    {
+      "name": "text",
+      "type": 1,
+      "S_hex": "53636174746572205365656473",
+      "k": 2,
+      "n": 3,
+      "M_hex": "0153636174746572205365656473DC9FE1CF",
+      "shares": [
+        "SSS1-015EED12340203010A63361BEBB08C7C130B18C7A39FCDA9BA4FBC80A45B",
+        "SSS1-015EED12340203021733C99551E7AC6E46E39F3AF1B0FEF357D4C967E9CF",
+        "SSS1-015EED12340203031C039CEFCE23456075BBE298365CEFC50C54D0E09E7D"
+      ],
+      "lengths": [
+        65,
+        65,
+        65
+      ],
+      "roundtrip": true
+    },
+    {
+      "name": "bip39-12",
+      "type": 3,
+      "S_hex": "7F7F7F7F7F7F7F7F7F7F7F7F7F7F7F7F",
+      "k": 3,
+      "n": 5,
+      "M_hex": "037F7F7F7F7F7F7F7F7F7F7F7F7F7F7F7FEDD3DE3A",
+      "shares": [
+        "SSS1-015EED12340305013850249814A05458A410841854405498040288F9117B764FAD",
+        "SSS1-015EED1234030502D526678E623B7785FF2BEA6EF41BA1935F7426594AD535CB37",
+        "SSS1-015EED1234030503EE093C6909E45CA224441109DF248A74249B7D7E61593EA0AB",
+        "SSS1-015EED123403050402D1C116445E0C76D0C9B50C2BDFCE584AAF35C242514402BF",
+        "SSS1-015EED123403050539FE9AF12F8127510BA64E6B00E0E5BF31406EE569DD4F6923"
+      ],
+      "lengths": [
+        71,
+        71,
+        71,
+        71,
+        71
+      ],
+      "roundtrip": true
+    },
+    {
+      "name": "bip39-24",
+      "type": 3,
+      "S_hex": "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
+      "k": 2,
+      "n": 3,
+      "M_hex": "03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF39336390",
+      "shares": [
+        "SSS1-015EED123402030108CFAA85603B16F1CCA7825D3813EEC9A47F5A3510EBC6A17C57320DE8C39E7954E9C679AF95C3B868",
+        "SSS1-015EED1234020302159F550BDA6C36E3994F05A06A3CDD9349E4AE703AD78D43E2B47E00D1873DE8B282C257EE24D67A6A",
+        "SSS1-015EED12340203031EAF007145A8DFEDAA177802ADD0CCA512640BBAD5C3B41D611CB3F2C6BB5C6E1952374DD1EFA76B32"
+      ],
+      "lengths": [
+        103,
+        103,
+        103
+      ],
+      "roundtrip": true
+    }
+  ],
+  "qr": [
+    {
+      "L": 29,
+      "chars": 71,
+      "L_ver": 3,
+      "M": 33,
+      "M_ver": 4,
+      "Q": 37,
+      "Q_ver": 5,
+      "H": 41,
+      "H_ver": 6
+    },
+    {
+      "L": 33,
+      "chars": 103,
+      "L_ver": 4,
+      "M": 37,
+      "M_ver": 5,
+      "Q": 41,
+      "Q_ver": 6,
+      "H": 49,
+      "H_ver": 8
+    },
+    {
+      "L": 41,
+      "chars": 167,
+      "L_ver": 6,
+      "M": 45,
+      "M_ver": 7,
+      "Q": 53,
+      "Q_ver": 9,
+      "H": 57,
+      "H_ver": 10
+    },
+    {
+      "L": 53,
+      "chars": 295,
+      "L_ver": 9,
+      "M": 57,
+      "M_ver": 10,
+      "Q": 65,
+      "Q_ver": 12,
+      "H": 77,
+      "H_ver": 15
+    },
+    {
+      "L": 69,
+      "chars": 551,
+      "L_ver": 13,
+      "M": 77,
+      "M_ver": 15,
+      "Q": 89,
+      "Q_ver": 18,
+      "H": 97,
+      "H_ver": 20
+    }
+  ],
+  "errors": {
+    "one share": "need 1",
+    "crc broken": "throw crc",
+    "dup": "throw dup x",
+    "lowercase+spaces": "ok fp=true inconsistent=[]",
+    "all three": "ok fp=true inconsistent=[]",
+    "forged (crc recomputed) + share1": "ok fp=false inconsistent=[]",
+    "honest 1,2 + forged 3": "ok fp=true inconsistent=[3]",
+    "x=0": "throw x=0",
+    "mixed sets": "throw setId"
+  },
+  "lengthFormula": [
+    {
+      "L": 16,
+      "chars": 71,
+      "formula": 71
+    },
+    {
+      "L": 32,
+      "chars": 103,
+      "formula": 103
+    },
+    {
+      "L": 64,
+      "chars": 167,
+      "formula": 167
+    },
+    {
+      "L": 256,
+      "chars": 551,
+      "formula": 551
+    }
+  ],
+  "maxSubsets": 12870
+}
