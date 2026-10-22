@@ -20,7 +20,9 @@ test('G: copied code and vendor files match pinned sources', () => {
 });
 test('G: core modules remain DOM independent and page has strict CSP', () => {
   const html = read('index.html');
-  assert.match(html, /connect-src 'none'/);
+  const csp = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; " +
+    "base-uri 'none'; form-action 'none'; frame-src 'none'; object-src 'none'; connect-src 'none'";
+  assert.ok(html.includes(`content="${csp}"`));
   assert.match(html, /<meta name="referrer" content="no-referrer">/);
   assert.doesNotMatch(html, /\son\w+=|\sstyle=/i);
   for (const file of ['sss-core.js', 'bip39.js']) assert.doesNotMatch(read(file), /\bdocument\b|\bwindow\b|\blocalStorage\b/);
@@ -29,9 +31,16 @@ test('G: core modules remain DOM independent and page has strict CSP', () => {
   }
   const app = read('app.js');
   assert.deepEqual([...app.matchAll(/localStorage\.(?:getItem|setItem)\('scatter-seeds\.' \+ key/g)].length, 2);
+  assert.deepEqual([...app.matchAll(/\b(?:save|stored)\('([^']+)'/g)].map(match => match[1]).sort(),
+    ['language', 'language', 'theme', 'theme']);
 });
 test('G: Japanese and English message keys match', () => {
   const messages = require('../messages.js');
   assert.deepEqual(Object.keys(messages.ja).sort(), Object.keys(messages.en).sort());
   for (const language of ['ja', 'en']) for (const value of Object.values(messages[language])) assert.ok(value);
+});
+test('G: product copy avoids prohibited guarantees and stock wording', () => {
+  for (const file of ['README.md', 'README.en.md', 'messages.js', 'index.html']) {
+    assert.doesNotMatch(read(file), /照合|突き合わせ|効く|走る|絶対に安全|完全に安全/, file);
+  }
 });

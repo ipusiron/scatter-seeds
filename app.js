@@ -26,7 +26,7 @@
     document.documentElement.dataset.theme = theme;
     document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll('[data-label]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.label)); });
-    $('language').textContent = language === 'ja' ? 'EN' : '日';
+    $('language').textContent = language === 'ja' ? 'EN' : 'JA';
     tabs.forEach(name => {
       const selected = name === active;
       $('tab-' + name).setAttribute('aria-selected', String(selected));
@@ -64,6 +64,7 @@
   for (const id of ['split-k', 'split-n', 'secret-kind']) $(id).addEventListener('input', renderThreshold);
   function readSecret() {
     const raw = $('secret-input').value, kind = $('secret-kind').value;
+    if (raw.length > 4096) throw taggedError(kind === 'bip39' ? 'invalidBip39' : 'invalidSecret');
     let secret, type;
     if (kind === 'text') { type = 1; secret = new TextEncoder().encode(raw); }
     else if (kind === 'bytes') {
@@ -87,7 +88,7 @@
   function discardShares() {
     shares = []; shareMeta = null;
     $('share-cards').replaceChildren(); $('print-controls').hidden = true;
-    $('instruction-page').hidden = true;
+    $('instruction-page').hidden = true; $('print-instructions').checked = false;
   }
   async function splitSecret() {
     const generation = ++splitGeneration;
@@ -126,7 +127,10 @@
     } catch (error) {
       discardShares(); setSplitMessage(error.key || 'verificationFailed', error.args);
     } finally {
-      if (generation === splitGeneration) { $('split-button').disabled = false; $('split-progress').hidden = true; }
+      if (generation === splitGeneration) {
+        $('split-button').disabled = false; $('split-progress').hidden = true;
+        $('progress-text').textContent = '';
+      }
       if (!shares.length) candidates = null;
     }
   }
@@ -151,7 +155,7 @@
       const qr = element('img', 'qr-image');
       qr.alt = 'QR · ' + t('shareHeading')(index + 1, shareMeta.n);
       qr.src = ScatterQR.make(share).createDataURL(3, 8);
-      card.append(qr, element('p', '', t('printHelp')),
+      card.append(qr, element('p', '', t('printHelp')(shareMeta.k)),
         element('p', 'url', 'https://ipusiron.github.io/scatter-seeds/'));
       const actions = element('div', 'card-actions');
       const copy = element('button', '', t('copy')); copy.type = 'button';
@@ -166,7 +170,7 @@
   $('clear-split').addEventListener('click', () => {
     splitGeneration++; discardShares();
     $('secret-input').value = ''; $('share-label').value = ''; $('print-date').value = '';
-    setSplitMessage('clipboardNote'); $('split-progress').hidden = true;
+    setSplitMessage('clipboardNote'); $('split-progress').hidden = true; $('progress-text').textContent = '';
     $('split-button').disabled = false;
   });
   $('print-instructions').addEventListener('change', () => { $('instruction-page').hidden = !$('print-instructions').checked; });

@@ -28,9 +28,12 @@
       verificationFailed: '共有の復元検査に失敗しました。共有は表示しません。',
       shareHeading: (x, n) => `No. ${x} / ${n}`, restoreCount: k => `復元に${k}枚`, setId: 'セットID',
       copy: '文字列をコピー', copied: 'コピーしました。', copyFailed: 'コピーできませんでした。手で写してください。',
-      printHelp: 'このセットからk枚を集め、Scatter Seedsで戻します。',
+      printHelp: k => `このセットから${k}枚を集め、Scatter Seedsで戻します。`,
       instructionTitle: '復元手順書 · 書式 v1',
-      instructionBody: 'SSS1-の後は16進。版1バイト・セットID4バイト・k・n・x各1バイト・分散データ・CRC-32 4バイトです。GF(2⁸)の多項式は0x11B、加算はXOR。x=0の値をラグランジュ補間で求めます。種別は01=テキスト、02=バイト列、03=BIP-39。末尾4バイトはSHA-256(種別‖秘密)の先頭4バイトです。READMEのPythonスクリプトも保存してください。',
+      instructionBody: 'SSS1-の後は16進。版1バイト・セットID4バイト・k・n・x各1バイト・分散データ・CRC-32 4バイトです。' +
+        'GF(2⁸)の多項式は0x11B、加算はXOR。x=0の値をラグランジュ補間で求めます。' +
+        '種別は01=テキスト、02=バイト列、03=BIP-39。末尾4バイトはSHA-256(種別‖秘密)の先頭4バイトです。' +
+        'READMEのPythonスクリプトも保存してください。',
       clipboardNote: 'クリップボードは消せません。コピーした場合は端末側で処理してください。',
       restoreTitle: '共有から戻す', restoreIntro: '共有の文字列またはQRを読み取ります。',
       sharesLabel: '共有の文字列（1行に1枚）', restoreAction: '検査して戻す', cameraAction: 'カメラで読む',
@@ -69,7 +72,8 @@
       kindLabel: 'Input type', kindText: 'Text', kindBytes: 'Hex bytes', kindBip39: 'BIP-39 (English)',
       secretLabel: 'Secret', kLabel: 'Shares needed k', nLabel: 'Shares created n', labelLabel: 'Share label (optional)',
       dateLabel: 'Certificate date (optional)', labelNote: 'Do not put the contents, storage location or owner in the label.',
-      bip39Note: 'The checksum is only 4–8 bits. For 12 words, one wrong word may pass about 1 in 16 times. Compare every word with the original paper. This tool does not handle the 25th passphrase; store it separately.',
+      bip39Note: 'The checksum is only 4–8 bits. For 12 words, one wrong word may pass about 1 in 16 times. ' +
+        'Compare every word with the original paper. This tool does not handle the 25th passphrase; store it separately.',
       splitAction: 'Split', clear: 'Clear all', printAction: 'Print certificates', printInstructions: 'Also print an instruction page',
       printWarning: '⚠ Check printer memory, the print queue and cloud sync of saved PDFs.',
       thresholdHint: (lost, stolen) => `You may lose ${lost} shares and still restore. Up to ${stolen} stolen shares reveal nothing.`,
@@ -83,9 +87,12 @@
       verificationFailed: 'Share verification failed. No shares are shown.',
       shareHeading: (x, n) => `No. ${x} / ${n}`, restoreCount: k => `${k} shares to restore`, setId: 'Set ID',
       copy: 'Copy share string', copied: 'Copied.', copyFailed: 'Copy failed. Transcribe it manually.',
-      printHelp: 'Collect k shares from this set and restore with Scatter Seeds.',
+      printHelp: k => `Collect ${k} shares from this set and restore with Scatter Seeds.`,
       instructionTitle: 'Restoration instructions · format v1',
-      instructionBody: 'After SSS1- comes hex: version (1 byte), set ID (4), k, n and x (1 each), share data, CRC-32 (4). The GF(2⁸) polynomial is 0x11B; addition is XOR. Use Lagrange interpolation at x=0. Type 01=text, 02=bytes, 03=BIP-39. The last four restored bytes are the first four bytes of SHA-256(type‖secret). Keep the Python script from README.',
+      instructionBody: 'After SSS1- comes hex: version (1 byte), set ID (4), k, n and x (1 each), share data, CRC-32 (4). ' +
+        'The GF(2⁸) polynomial is 0x11B; addition is XOR. Use Lagrange interpolation at x=0. ' +
+        'Type 01=text, 02=bytes, 03=BIP-39. The last four restored bytes are the first four bytes of ' +
+        'SHA-256(type‖secret). Keep the Python script from README.',
       clipboardNote: 'This cannot clear the clipboard. Clear it on your device if you copied a share.',
       restoreTitle: 'Restore from shares', restoreIntro: 'Enter share strings or scan a QR code.',
       sharesLabel: 'Share strings (one per line)', restoreAction: 'Check and restore', cameraAction: 'Scan with camera',
@@ -101,18 +108,29 @@
       restoredTitle: 'Restored secret', reveal: 'Show', conceal: 'Hide', entropyHex: 'Original entropy (hex)',
       badText: 'Cannot decode as text. No value is shown.', badType: 'Invalid type. No value is shown.',
       guideTitle: 'Storage guide', guideIntro: 'Check how many shares you can lose or expose.',
-      guideExamplesTitle: 'Example thresholds', guideExamples: 'For 2-of-3, consider home, a relative’s home and a safe deposit box. For 3-of-5, use family and a trusted third party.',
-      guideCasesTitle: 'Uses', guideCases: 'For disaster preparation, do not keep all shares in one region. Other cases include inheritance, cryptocurrency seed phrases, company recovery keys and safe combinations.',
-      guideAvoidTitle: 'Avoid', guideAvoid: 'Do not keep all shares together, photograph them into cloud storage, or put contents or locations on the label. Avoid k=n. Do not leave the original secret in plaintext after splitting.',
-      guideInspectTitle: 'Periodic checks', guideInspect: 'Once a year, check that the paper is present and legible. Test k shares in Restore without revealing the secret.',
-      guideSurviveTitle: 'If this tool disappears', guideSurvive: 'Keep a ZIP of the repository, the printed instruction page, and the standard-library-only Python script in README.',
+      guideExamplesTitle: 'Example thresholds',
+      guideExamples: 'For 2-of-3, consider home, a relative’s home and a safe deposit box. ' +
+        'For 3-of-5, use family and a trusted third party.',
+      guideCasesTitle: 'Uses',
+      guideCases: 'For disaster preparation, do not keep all shares in one region. ' +
+        'Other cases include inheritance, cryptocurrency seed phrases, company recovery keys and safe combinations.',
+      guideAvoidTitle: 'Avoid',
+      guideAvoid: 'Do not keep all shares together, photograph them into cloud storage, or put contents or locations on the label. ' +
+        'Avoid k=n. Do not leave the original secret in plaintext after splitting.',
+      guideInspectTitle: 'Periodic checks',
+      guideInspect: 'Once a year, check that the paper is present and legible. ' +
+        'Test k shares in Restore without revealing the secret.',
+      guideSurviveTitle: 'If this tool disappears',
+      guideSurvive: 'Keep a ZIP of the repository, the printed instruction page, ' +
+        'and the standard-library-only Python script in README.',
       guideLimitsTitle: 'Limits',
       guideLimit1: 'Do not make this your only backup. The person splitting sees the secret. Protect the device and browser extensions.',
       guideLimit2: 'Any k people can combine their shares; this does not prevent collusion.',
       guideLimit3: 'You trust the browser random generator and print path. Check printer memory and queues.',
       guideLimit4: 'The format is custom and incompatible with SLIP-39 devices. Changes can be detected, but the changer cannot be identified.',
       guideLimit5: 'JavaScript cannot guarantee constant-time execution.',
-      helpTitle: 'About Scatter Seeds', helpBody: 'Shamir secret sharing creates n shares, any k of which restore the secret. Protect your device and print path.',
+      helpTitle: 'About Scatter Seeds',
+      helpBody: 'Shamir secret sharing creates n shares, any k of which restore the secret. Protect your device and print path.',
       close: 'Close'
     }
   });

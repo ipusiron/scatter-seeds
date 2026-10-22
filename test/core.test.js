@@ -76,6 +76,7 @@ test('D: official BIP-39 values, full words, checksum and word list', () => {
   assert.equal(W.length, V.checks.words);
   const reference = fs.readFileSync(path.join(__dirname, 'fixtures/bip39-english.txt'));
   assert.equal(crypto.createHash('sha256').update(reference).digest('hex'), '2f5eed53a4727b4bf8880d8f3f199efc90e58503646d9ff8eff3a2ed3b24dbda');
+  assert.deepEqual(W, reference.toString('utf8').trim().split(/\s+/));
   const pairs = [[V.checks.bip39_official[0].e, zero], [V.checks.bip39_official[1].e, middle], [V.checks.bip39_official[2].e, full]];
   for (const [hex, mnemonic] of pairs) {
     assert.equal(B.entropyToMnemonic(C.unhex(hex)), mnemonic);
@@ -84,6 +85,7 @@ test('D: official BIP-39 values, full words, checksum and word list', () => {
   assert.throws(() => B.mnemonicToEntropy('abandon '.repeat(12)), /checksum/);
   assert.throws(() => B.mnemonicToEntropy(zero.replace('about', 'abou')), /unknown word/);
   assert.ok(B.suggest('abou').includes('about'));
+  assert.deepEqual(B.suggest('x'.repeat(10000)), []);
   for (const length of [16, 20, 24, 28, 32]) {
     const entropy = crypto.randomBytes(length);
     assert.deepEqual(B.mnemonicToEntropy(B.entropyToMnemonic(entropy)), new Uint8Array(entropy));
@@ -100,15 +102,17 @@ test('E: every threshold subset restores random secrets', () => {
   }
   assert.equal(C.combinations(16, 8).length, V.maxSubsets);
 });
-test('B: QR alphanumeric M versions match reference capacity rows', () => {
+test('B: QR alphanumeric versions match every reference capacity row', () => {
   for (const [index, row] of V.qr.entries()) {
     // The reference generator uses L as its error-correction key, overwriting the input length.
     const secretLength = [16, 32, 64, 128, 256][index];
     const share = C.split(2, new Uint8Array(secretLength), 2, 2, rand(), C.unhex('5EED1234'))[0];
-    const qr = qrcode(0, 'M'); qr.addData(share, 'Alphanumeric'); qr.make();
     assert.equal(share.length, row.chars);
-    assert.equal(qr.getModuleCount(), row.M);
-    assert.equal((qr.getModuleCount() - 17) / 4, row.M_ver);
+    for (const level of ['L', 'M', 'Q', 'H']) {
+      const qr = qrcode(0, level); qr.addData(share, 'Alphanumeric'); qr.make();
+      assert.equal(qr.getModuleCount(), row[level]);
+      assert.equal((qr.getModuleCount() - 17) / 4, row[level + '_ver']);
+    }
   }
 });
 

@@ -34,9 +34,19 @@ def ordinary_browser(p, name):
                                       has_touch=width < 500, reduced_motion='reduce')
         page = context.new_page()
         errors = []
+        external_requests = []
         page.on('pageerror', lambda error: errors.append(str(error)))
+        page.on('request', lambda request: external_requests.append(request.url)
+                if request.url.startswith(('http://', 'https://')) else None)
         page.goto(URL)
         assert page.evaluate('() => isSecureContext && !!navigator.mediaDevices?.getUserMedia')
+        assert page.evaluate('() => matchMedia("(prefers-reduced-motion: reduce)").matches')
+        page.locator('#tab-split').focus()
+        page.keyboard.press('ArrowRight')
+        assert page.locator('#tab-restore').get_attribute('aria-selected') == 'true'
+        assert page.locator('#tab-restore').evaluate('(e) => getComputedStyle(e).outlineStyle') != 'none'
+        page.keyboard.press('ArrowLeft')
+        assert page.locator('#tab-split').get_attribute('aria-selected') == 'true'
         page.fill('#secret-input', 'Scatter Seeds')
         page.click('#split-button')
         page.wait_for_function('() => document.querySelectorAll("#share-cards .certificate").length === 3')
@@ -57,6 +67,8 @@ def ordinary_browser(p, name):
         page.click('#language')
         assert page.locator('#tab-guide').get_attribute('aria-label') == 'Storage guide'
         assert 'All 3 subsets' in page.locator('#split-status').inner_text()
+        japanese = page.evaluate('() => document.body.textContent.match(/.{0,20}[\u3040-\u30ff\u3400-\u9fff].{0,20}/g)')
+        assert not japanese, [item.encode('ascii', 'replace').decode() for item in (japanese or [])]
         page.click('#tab-restore')
         shares = VECTORS['vectors'][0]['shares']
         page.fill('#restore-input', '\n'.join(shares[:2]))
@@ -90,6 +102,7 @@ def ordinary_browser(p, name):
         measure(page, (name, width, 'help'))
         page.click('#help-close')
         assert not errors, errors
+        assert not external_requests, external_requests
         print(name, width, 'split/restore/guide/Help OK; overflow 0')
         context.close()
     browser.close()
@@ -136,7 +149,10 @@ with sync_playwright() as playwright:
                                                            'media.navigator.permission.disabled': True})
     page = browser.new_page()
     page.goto(URL)
-    assert page.evaluate('async () => { const s = await navigator.mediaDevices.getUserMedia({video:true}); const count=s.getVideoTracks().length; s.getTracks().forEach(t=>t.stop()); return count; }') == 1
+    count = page.evaluate('async () => { const stream = await navigator.mediaDevices.getUserMedia({video:true}); '
+                          'const count = stream.getVideoTracks().length; stream.getTracks().forEach(t => t.stop()); '
+                          'return count; }')
+    assert count == 1
     print('firefox file:// getUserMedia: one live fake video track')
     browser.close()
     camera_test(playwright)

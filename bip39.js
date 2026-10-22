@@ -8,6 +8,7 @@
   const LENGTHS = [16, 20, 24, 28, 32];
   const words = () => WORDS;
   function suggest(word) {
+    if (word.length > 16) return [];
     const prefix = word.slice(0, 4);
     const close = WORDS.filter(w => w.startsWith(prefix));
     if (close.length) return close.slice(0, 5);
