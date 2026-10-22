@@ -42,6 +42,34 @@
     <section id="panel-split" class="panel" role="tabpanel" aria-labelledby="tab-split">
       <h2 data-i18n="splitTitle"></h2>
       <p data-i18n="splitIntro"></p>
+      <div class="form-grid">
+        <label><span data-i18n="kindLabel"></span>
+          <select id="secret-kind" autocomplete="off"><option value="text" data-i18n="kindText"></option>
+            <option value="bytes" data-i18n="kindBytes"></option><option value="bip39" data-i18n="kindBip39"></option></select></label>
+        <label class="full"><span data-i18n="secretLabel"></span>
+          <textarea id="secret-input" rows="5" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></label>
+        <label><span data-i18n="kLabel"></span><input id="split-k" type="number" min="2" max="16" value="2" inputmode="numeric"></label>
+        <label><span data-i18n="nLabel"></span><input id="split-n" type="number" min="2" max="16" value="3" inputmode="numeric"></label>
+        <label class="full"><span data-i18n="labelLabel"></span><input id="share-label" type="text" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="off"></label>
+        <label><span data-i18n="dateLabel"></span><input id="print-date" type="date"></label>
+      </div>
+      <p class="note" data-i18n="labelNote"></p>
+      <p id="threshold-hint" class="note" role="status"></p>
+      <p id="bip39-note" class="note" data-i18n="bip39Note" hidden></p>
+      <div class="actions"><button id="split-button" type="button" data-i18n="splitAction"></button>
+        <button id="clear-split" type="button" data-i18n="clear"></button></div>
+      <p id="split-status" role="status" aria-live="polite"></p>
+      <div id="split-progress" hidden><progress id="progress-bar" value="0" max="1"></progress><span id="progress-text"></span></div>
+      <div id="print-controls" hidden>
+        <p class="warning" data-i18n="printWarning"></p>
+        <label class="choice"><input id="print-instructions" type="checkbox"><span data-i18n="printInstructions"></span></label>
+        <button id="print-button" type="button" data-i18n="printAction"></button>
+      </div>
+      <div id="share-cards" class="share-cards"></div>
+      <article id="instruction-page" class="certificate instructions" hidden>
+        <h2 data-i18n="instructionTitle"></h2><p data-i18n="instructionBody"></p>
+        <p>https://ipusiron.github.io/scatter-seeds/</p>
+      </article>
     </section>
     <section id="panel-restore" class="panel" role="tabpanel" aria-labelledby="tab-restore" hidden>
       <h2 data-i18n="restoreTitle"></h2>

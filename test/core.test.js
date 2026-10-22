@@ -7,6 +7,7 @@ const path = require('node:path');
 const C = require('../sss-core.js');
 const B = require('../bip39.js');
 const W = require('../bip39-english.js');
+const qrcode = require('../vendor/qrcode.min.js');
 const V = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/vectors.json'), 'utf8'));
 const rand = () => { let i = 0; return count => Uint8Array.from({ length: count }, () => (37 * i++ + 11) & 255); };
 const text = 'Scatter Seeds';
@@ -98,5 +99,16 @@ test('E: every threshold subset restores random secrets', () => {
     }
   }
   assert.equal(C.combinations(16, 8).length, V.maxSubsets);
+});
+test('B: QR alphanumeric M versions match reference capacity rows', () => {
+  for (const [index, row] of V.qr.entries()) {
+    // The reference generator uses L as its error-correction key, overwriting the input length.
+    const secretLength = [16, 32, 64, 128, 256][index];
+    const share = C.split(2, new Uint8Array(secretLength), 2, 2, rand(), C.unhex('5EED1234'))[0];
+    const qr = qrcode(0, 'M'); qr.addData(share, 'Alphanumeric'); qr.make();
+    assert.equal(share.length, row.chars);
+    assert.equal(qr.getModuleCount(), row.M);
+    assert.equal((qr.getModuleCount() - 17) / 4, row.M_ver);
+  }
 });
 

@@ -21,6 +21,28 @@ h2 { margin-top: 0; font-family: Georgia, serif; }
 .tabs button { flex: 1; min-width: 0; background: var(--card); color: var(--ink); padding: .5rem .2rem; }
 .tabs button[aria-selected="true"] { background: var(--button); color: var(--button-ink); }
 .panel { min-height: 12rem; }
+.form-grid { display: grid; gap: .9rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.form-grid label { display: grid; gap: .3rem; min-width: 0; font-weight: 600; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-grid input, .form-grid select, .form-grid textarea { width: 100%; min-width: 0; padding: .65rem; color: var(--ink); background: var(--paper); border: 2px solid var(--line); border-radius: .25rem; }
+.form-grid textarea { resize: vertical; min-height: 7rem; }
+.note { color: var(--muted); }
+.warning { border: 3px solid var(--ink); padding: .8rem; font-weight: 700; }
+.actions { display: flex; gap: .6rem; flex-wrap: wrap; margin: 1rem 0; }
+.choice { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: .4rem; }
+progress { width: min(100%, 30rem); height: 1.3rem; vertical-align: middle; }
+#progress-text { margin-left: .5rem; }
+.share-cards { display: grid; gap: 1rem; margin-top: 1rem; }
+.certificate { --ink: #172622; --muted: #40554e; --line: #27584b; background: #fff; color: var(--ink); border: 7px double var(--line); padding: 1rem; min-width: 0; }
+.certificate-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; border-bottom: 2px solid var(--line); }
+.certificate h3, .certificate h2 { font-family: Georgia, serif; margin: .4rem 0; }
+.certificate-number { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 700; }
+.seal { display: inline-block; border: 4px double var(--line); padding: .6rem; font-family: Consolas, 'Courier New', monospace; font-weight: 700; letter-spacing: .1em; }
+.share-string { font-family: Consolas, 'Courier New', monospace; font-size: .9rem; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; word-break: break-all; letter-spacing: .025em; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: .8rem 0; }
+.qr-image { display: block; width: min(100%, 280px); height: auto; margin: 1rem auto; image-rendering: pixelated; }
+.certificate .url { font-size: .9rem; overflow-wrap: anywhere; }
+.certificate .card-actions { margin-top: .8rem; }
+.instructions { margin-top: 1rem; }
 [hidden] { display: none !important; }
 footer { display: flex; flex-wrap: wrap; gap: 1rem; justify-content: space-between; padding: 1rem 0; }
 footer a { display: inline-flex; align-items: center; min-height: 44px; }
@@ -28,4 +50,16 @@ dialog { color: var(--ink); background: var(--card); border: 3px double var(--li
 dialog::backdrop { background: #0009; }
 @media (min-width: 700px) { body { padding: 2rem; } .page-header, .panel { padding: 1.8rem; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0s !important; transition-duration: 0s !important; scroll-behavior: auto !important; } }
-@media print { :root { color-scheme: light; } html, body { background: white; color: black; } }
+@page { size: A4; margin: 12mm; }
+@media print {
+  :root { color-scheme: light; }
+  html, body { background: white; color: black; margin: 0; padding: 0; max-width: none; }
+  .page-header, .tabs, footer, dialog, #panel-restore, #panel-guide, #panel-split > :not(#share-cards):not(#instruction-page) { display: none !important; }
+  main, #panel-split, #share-cards { display: block !important; margin: 0; padding: 0; border: 0; }
+  .certificate { display: block; width: 100%; height: 270mm; max-height: 270mm; padding: 12mm; break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; border-color: #222; color: #111; }
+  .certificate:last-child { break-after: auto; page-break-after: auto; }
+  .certificate .card-actions { display: none; }
+  .qr-image { width: 62mm; }
+  #instruction-page[hidden] { display: none !important; }
+  #instruction-page:not([hidden]) { break-after: auto; page-break-after: auto; }
+}
