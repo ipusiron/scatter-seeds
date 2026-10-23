@@ -70,6 +70,35 @@ With correct randomness, k−1 or fewer shares alone reveal nothing about the se
 
 [Day123 ShamirSharing CipherLab](https://ipusiron.github.io/shamir-sharing-cipherlab/) explains the mechanism using coordinate plots, worked calculations and byte tables. It puts the required number first in the notation “(k,n) threshold sharing”. Day123 is educational: use practice values, never real passwords or seed phrases.
 
+### Input size limit and calculations
+
+The secret itself must be **1–256 bytes**. One byte is eight bits, so the maximum is 256 × 8 = 2,048 bits. Added data such as the type and fingerprint is outside this limit.
+
+Text is measured in UTF-8 bytes, including spaces and line breaks. When repeating one character, divide 256 by its byte size and round down. The `floor` notation in the table means rounding down to an integer.
+
+| Input example | Size per unit | Limit calculation | Accepted amount |
+|---|---|---|---|
+| ASCII letters and digits | 1 byte per character | `256 ÷ 1 = 256` | 256 characters |
+| Only “あ” | 3 bytes per character | `floor(256 ÷ 3) = 85` | 85 characters (255 bytes) |
+| Only “😀” | 4 bytes per copy | `256 ÷ 4 = 64` | 64 copies (256 bytes) |
+| Hexadecimal bytes | 1 byte per two digits | `256 × 2 = 512` | 512 digits (an even number) |
+
+For “あ”, 85 × 3 = 255 bytes fits, but 86 × 3 = 258 bytes exceeds the limit. For mixed text, add the UTF-8 byte sizes: `Aあ😀` uses 1 + 3 + 4 = 8 bytes. Some Japanese characters use four bytes, and emoji or combining characters can use multiple characters for one visible symbol. Visible character count alone therefore does not determine byte size.
+
+One hexadecimal digit represents four bits; two digits represent eight bits, or one byte. The maximum input length is therefore 256 × 2 = 512 digits.
+
+BIP-39 words are converted to their original entropy before splitting. Each word represents 11 bits. Subtract the checksum, which has word count ÷ 3 bits, and divide by eight to obtain the original entropy size in bytes.
+
+| Word count | Checksum bits | Original entropy bytes |
+|---|---|---|
+| 12 | 4 | 16 |
+| 15 | 5 | 20 |
+| 18 | 6 | 24 |
+| 21 | 7 | 28 |
+| 24 | 8 | 32 |
+
+For 12 words, (12 × 11 − 4) ÷ 8 = 16 bytes; for 24 words, (24 × 11 − 8) ÷ 8 = 32 bytes. This is separate from the size of the word sequence encoded as UTF-8.
+
 ### Steps
 
 The “?” button opens help with each tab, a practice exercise, use cases and what not to do. Values chosen in Storage guide do not change the settings in Split. Start by splitting the nonsecret text “Scatter Seeds” with k=2, n=3 and testing restoration.

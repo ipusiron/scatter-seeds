@@ -71,6 +71,14 @@
       guideAvoid7: "「すべて消す」でクリップボードや印刷済みデータまで消えたと思わない。コピー先、印刷キュー、プリンターの記憶も確認する。",
       helpTitle: "使い方と保管のヘルプ",
       helpIntro: "Scatter Seedsは、1つの秘密から複数の共有（シェア）を作り、必要な枚数を集めて戻すツールです。共有は文字列とQRを載せた証書として印刷できます。",
+      helpInputSizeTitle: "入力サイズの上限と換算例",
+      helpInputSizeLimit: "分けられる秘密は1〜256バイト（最大2,048ビット）です。テキストは空白・改行も含め、UTF-8に変換した後のバイト数で判定します。",
+      helpInputAscii: "半角英数字（ASCII）だけ：最大256文字。1文字が1バイト。",
+      helpInputJapanese: "「あ」だけ：最大85文字（255バイト）。1文字が3バイトなので、86文字では258バイトとなり上限を超える。",
+      helpInputEmoji: "「😀」だけ：最大64個（256バイト）。この絵文字は1個が4バイト。",
+      helpInputHex: "16進のバイト列：最大512桁。2桁で1バイトになるため、偶数桁で入力する。",
+      helpInputBip39: "BIP-39（英語）：12・15・18・21・24語に対応。単語列を元の乱数（16〜32バイト）に変換して分ける。",
+      helpInputSizeNote: "日本語や絵文字のバイト数は、文字の種類や組み合わせで変わります。「あ」85文字・「😀」64個は、それぞれ同じ文字だけを繰り返した場合の上限です。",
       helpThresholdTitle: "しきい値法：n枚のうちk枚で戻す",
       helpThreshold: "シャミアの秘密分散では、秘密と乱数からn個の共有を作ります。そのうち異なるk個が集まれば、どの組み合わせでも元の秘密を戻せます。この必要数kを「しきい値」と呼びます。",
       helpN: "n：作る共有の総数。たとえばn=3なら、番号の異なる3枚を作る。",
@@ -232,6 +240,18 @@
       helpTitle: "Help with use and storage",
       helpIntro: "Scatter Seeds creates several shares from one secret and restores it when enough shares " +
         "are collected. Each share can be printed as a certificate with a string and QR code.",
+      helpInputSizeTitle: "Input size limit and examples",
+      helpInputSizeLimit: "The secret must be 1–256 bytes (at most 2,048 bits). Text is measured after UTF-8 encoding, includin" +
+        "g spaces and line breaks.",
+      helpInputAscii: "ASCII letters and digits only: up to 256 characters, at one byte each.",
+      helpInputJapanese: "Only “あ”: up to 85 characters (255 bytes). Each is three bytes; 86 characters use 258 bytes and exce" +
+        "ed the limit.",
+      helpInputEmoji: "Only “😀”: up to 64 copies (256 bytes). This emoji uses four bytes per copy.",
+      helpInputHex: "Hexadecimal bytes: up to 512 digits. Two digits encode one byte, so enter an even number of digits.",
+      helpInputBip39: "English BIP-39: 12, 15, 18, 21 or 24 words. The words are converted to their original entropy (16–32" +
+        " bytes) before splitting.",
+      helpInputSizeNote: "The byte size of Japanese text and emoji depends on the characters and their combinations. The limit" +
+        "s of 85 “あ” characters and 64 “😀” copies apply when repeating only that character.",
       helpThresholdTitle: "Threshold sharing: any k of n shares",
       helpThreshold: "Shamir secret sharing uses a secret and random values to create n shares. Any k distinct" +
         " shares can restore the original secret, regardless of which ones you choose. The requir" +
