@@ -41,6 +41,37 @@ test('README numeric examples follow the reference vectors', () => {
   assert.equal(B.entropyToMnemonic(C.unhex(V.vectors[1].S_hex)),
     'legal winner thank year wave sausage worth useful legal winner thank yellow');
 });
+test('Input-size examples match UTF-8, hexadecimal and BIP-39 calculations', () => {
+  assert.equal(C.MAX_SECRET, 256);
+  const encoder = new TextEncoder();
+  for (const [character, bytes] of [['A', 1], ['あ', 3], ['😀', 4]]) {
+    assert.equal(encoder.encode(character).length, bytes);
+    const count = Math.floor(C.MAX_SECRET / bytes);
+    const accepted = encoder.encode(character.repeat(count));
+    assert.equal(accepted.length, count * bytes);
+    assert.doesNotThrow(() => C.buildM(1, accepted));
+    assert.throws(() => C.buildM(1, encoder.encode(character.repeat(count + 1))));
+    const formula = bytes === 3 ? `floor(256 ÷ ${bytes}) = ${count}` : `256 ÷ ${bytes} = ${count}`;
+    for (const content of [ja, en]) assert.ok(content.includes('`' + formula + '`'), formula);
+  }
+  assert.equal(encoder.encode('Aあ😀').length, 8);
+  assert.equal(C.unhex('AB'.repeat(C.MAX_SECRET)).length, C.MAX_SECRET);
+  for (const content of [ja, en]) {
+    assert.ok(content.includes(`256 × 2 = ${C.MAX_SECRET * 2}`));
+    assert.ok(content.includes(`256 × 8 = ${(C.MAX_SECRET * 8).toLocaleString('en-US')}`));
+    assert.ok(content.includes('85 × 3 = 255') && content.includes('86 × 3 = 258'));
+    assert.ok(content.includes('1 + 3 + 4 = 8'));
+  }
+  for (const bytes of [16, 20, 24, 28, 32]) {
+    const words = B.entropyToMnemonic(new Uint8Array(bytes));
+    const count = words.split(' ').length;
+    const checksum = count / 3;
+    assert.equal((count * 11 - checksum) / 8, bytes);
+    assert.equal(B.mnemonicToEntropy(words).length, bytes);
+    for (const content of [ja, en]) assert.ok(content.includes(`| ${count} | ${checksum} | ${bytes} |`));
+  }
+});
+
 test('README screenshots and directory entries refer to present files', () => {
   for (const [content, language] of [[ja, 'ja'], [en, 'en']]) {
     const images = [...content.matchAll(/!\[[^\]]+\]\((assets\/[a-z]+\/(?:light|dark)\/[a-z]+\.png)\)/g)]
