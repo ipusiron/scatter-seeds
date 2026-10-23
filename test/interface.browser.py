@@ -26,6 +26,53 @@ def measure(page, label):
     assert value == 0, (label, value)
 
 
+def help_check(page, name, width):
+    for language in ('ja', 'en'):
+        if page.locator('html').get_attribute('lang') != language:
+            page.click('#language')
+        for theme in ('light', 'dark'):
+            if page.locator('html').get_attribute('data-theme') != theme:
+                page.click('#theme')
+            page.click('#help')
+            assert page.locator('#help-title').evaluate('(e) => e === document.activeElement')
+            dialog = page.locator('#help-dialog')
+            assert dialog.evaluate('(e) => e.scrollWidth === e.clientWidth')
+            assert page.locator('#help-content').evaluate('(e) => e.scrollWidth === e.clientWidth')
+            for selector in ('[data-i18n]', '[data-label]'):
+                assert dialog.locator(selector).evaluate_all('(els) => els.every(e => e.textContent.trim())')
+            copy = dialog.inner_text()
+            assert '???' not in copy and 'undefined' not in copy
+            assert 'Day123' in copy and '2-of-3' in copy
+            assert '2 ≤ k ≤ n ≤ 16' in copy
+            assert dialog.locator('li[data-i18n^="guideAvoid"]').count() == 7
+            assert dialog.locator('li[data-i18n^="guideCase"]').count() == 4
+            link = dialog.locator('.help-link')
+            assert link.get_attribute('href') == 'https://ipusiron.github.io/shamir-sharing-cipherlab/'
+            assert link.get_attribute('target') == '_blank'
+            # Tab must stay in the modal while the underlying tabs are inert.
+            for _ in range(5):
+                page.keyboard.press('Tab')
+                assert dialog.evaluate('(e) => e.contains(document.activeElement)')
+            page.locator('#help-close').focus()
+            page.keyboard.press('Shift+Tab')
+            assert link.evaluate('(e) => e === document.activeElement')
+            page.keyboard.press('Tab')
+            assert page.locator('#help-close').evaluate('(e) => e === document.activeElement')
+            page.locator('[data-i18n="helpChecks"]').scroll_into_view_if_needed()
+            assert page.locator('#help-content').evaluate('(e) => e.scrollTop > 0')
+            close = page.locator('#help-close').bounding_box()
+            assert 0 <= close['y'] and close['y'] + close['height'] <= page.viewport_size['height']
+            assert close['height'] >= 44
+            measure(page, (name, width, language, theme, 'long help'))
+            page.keyboard.press('Escape')
+            assert not dialog.is_visible()
+            assert page.locator('#help').evaluate('(e) => e === document.activeElement')
+            page.click('#help')
+            assert page.locator('#help-content').evaluate('(e) => e.scrollTop') == 0
+            page.click('#help-close')
+            assert page.locator('#help').evaluate('(e) => e === document.activeElement')
+
+
 def ordinary_browser(p, name):
     browser = getattr(p, name).launch(headless=True)
     for width in (320, 390, 1280):
@@ -98,9 +145,7 @@ def ordinary_browser(p, name):
         page.fill('#guide-k', '3')
         page.fill('#guide-n', '5')
         measure(page, (name, width, 'guide'))
-        page.click('#help')
-        measure(page, (name, width, 'help'))
-        page.click('#help-close')
+        help_check(page, name, width)
         assert not errors, errors
         assert not external_requests, external_requests
         print(name, width, 'split/restore/guide/Help OK; overflow 0')

@@ -101,8 +101,21 @@
         <label><span data-i18n="nLabel"></span><input id="guide-n" type="number" min="2" max="16" value="3"></label></div>
       <p id="guide-threshold" role="status"></p>
       <h3 data-i18n="guideExamplesTitle"></h3><p data-i18n="guideExamples"></p>
-      <h3 data-i18n="guideCasesTitle"></h3><p data-i18n="guideCases"></p>
-      <h3 data-i18n="guideAvoidTitle"></h3><p class="warning" data-i18n="guideAvoid"></p>
+      <h3 data-i18n="guideCasesTitle"></h3><ul class="reading-list">
+        <li data-i18n="guideCase1"></li>
+        <li data-i18n="guideCase2"></li>
+        <li data-i18n="guideCase3"></li>
+        <li data-i18n="guideCase4"></li>
+      </ul>
+      <h3 data-i18n="guideAvoidTitle"></h3><div class="warning"><ul class="reading-list">
+        <li data-i18n="guideAvoid1"></li>
+        <li data-i18n="guideAvoid2"></li>
+        <li data-i18n="guideAvoid3"></li>
+        <li data-i18n="guideAvoid4"></li>
+        <li data-i18n="guideAvoid5"></li>
+        <li data-i18n="guideAvoid6"></li>
+        <li data-i18n="guideAvoid7"></li>
+      </ul></div>
       <h3 data-i18n="guideInspectTitle"></h3><p data-i18n="guideInspect"></p>
       <h3 data-i18n="guideSurviveTitle"></h3><p data-i18n="guideSurvive"></p>
       <h3 data-i18n="guideLimitsTitle"></h3><ul>
@@ -112,9 +125,69 @@
   </main>
   <footer><span>Scatter Seeds · MIT · Day124</span><a href="https://github.com/ipusiron/scatter-seeds">GitHub</a></footer>
   <dialog id="help-dialog" aria-labelledby="help-title">
-    <h2 id="help-title" data-i18n="helpTitle"></h2>
-    <p data-i18n="helpBody"></p>
-    <button id="help-close" type="button" data-i18n="close"></button>
+    <div class="help-header">
+      <h2 id="help-title" data-i18n="helpTitle" tabindex="-1" autofocus></h2>
+      <button id="help-close" type="button" data-i18n="close"></button>
+    </div>
+    <div id="help-content" class="help-content" tabindex="0">
+      <p data-i18n="helpIntro"></p>
+      <section aria-labelledby="help-threshold-title">
+        <h3 id="help-threshold-title" data-i18n="helpThresholdTitle"></h3>
+        <p data-i18n="helpThreshold"></p>
+        <ul class="reading-list">
+          <li data-i18n="helpN"></li><li data-i18n="helpK"></li><li data-i18n="helpShare"></li>
+        </ul>
+        <p class="help-example" data-i18n="helpExample"></p>
+        <p data-i18n="helpTradeoff"></p>
+        <p data-i18n="helpLearn"></p>
+        <a class="help-link" href="https://ipusiron.github.io/shamir-sharing-cipherlab/"
+           target="_blank" rel="noopener noreferrer" data-i18n="helpDay123"></a>
+        <p class="note" data-i18n="helpLearningNote"></p>
+      </section>
+      <section aria-labelledby="help-tabs-title">
+        <h3 id="help-tabs-title" data-i18n="helpTabsTitle"></h3>
+        <h4 data-i18n="splitTab"></h4>
+        <ol class="reading-list">
+          <li data-i18n="helpSplit1"></li><li data-i18n="helpSplit2"></li><li data-i18n="helpSplit3"></li>
+        </ol>
+        <h4 data-i18n="restoreTab"></h4>
+        <ol class="reading-list">
+          <li data-i18n="helpRestore1"></li><li data-i18n="helpRestore2"></li><li data-i18n="helpRestore3"></li>
+        </ol>
+        <h4 data-i18n="guideTab"></h4>
+        <p data-i18n="helpGuide"></p>
+      </section>
+      <section aria-labelledby="help-practice-title">
+        <h3 id="help-practice-title" data-i18n="helpPracticeTitle"></h3>
+        <p data-i18n="helpPractice"></p>
+      </section>
+      <section aria-labelledby="help-cases-title">
+        <h3 id="help-cases-title" data-i18n="guideCasesTitle"></h3>
+        <ul class="reading-list">
+        <li data-i18n="guideCase1"></li>
+        <li data-i18n="guideCase2"></li>
+        <li data-i18n="guideCase3"></li>
+        <li data-i18n="guideCase4"></li>
+        </ul>
+      </section>
+      <section aria-labelledby="help-avoid-title">
+        <h3 id="help-avoid-title" data-i18n="guideAvoidTitle"></h3>
+        <ul class="reading-list">
+        <li data-i18n="guideAvoid1"></li>
+        <li data-i18n="guideAvoid2"></li>
+        <li data-i18n="guideAvoid3"></li>
+        <li data-i18n="guideAvoid4"></li>
+        <li data-i18n="guideAvoid5"></li>
+        <li data-i18n="guideAvoid6"></li>
+        <li data-i18n="guideAvoid7"></li>
+        </ul>
+      </section>
+      <section aria-labelledby="help-data-title">
+        <h3 id="help-data-title" data-i18n="helpDataTitle"></h3>
+        <p data-i18n="helpData"></p>
+        <p data-i18n="helpChecks"></p>
+      </section>
+    </div>
   </dialog>
 </body>
 </html>

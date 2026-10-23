@@ -48,11 +48,23 @@ Secrets, shares and labels are never stored in browser storage, URLs or history.
 
 ## 📖 How to use
 
+### Threshold sharing: any k of n shares
+
+A secret and random values create n shares; any k distinct shares can restore the original secret. The required number k is the threshold. With n=3, k=2 (2-of-3), shares 1+2, 1+3 or 2+3 all work. One share may be lost, and two copies of the same share still count as only one.
+
+With correct randomness, k−1 or fewer shares alone reveal nothing about the secret value. Shares are not slices of the original text. They still reveal metadata such as length, k and n. You may lose n−k shares and still restore, but k=n makes the loss of even one share fatal to recovery.
+
+[Day123 ShamirSharing CipherLab](https://ipusiron.github.io/shamir-sharing-cipherlab/) explains the mechanism using coordinate plots, worked calculations and byte tables. It puts the required number first in the notation “(k,n) threshold sharing”. Day123 is educational: use practice values, never real passwords or seed phrases.
+
+### Steps
+
+The “?” button opens help with each tab, a practice exercise, use cases and what not to do. Values chosen in Storage guide do not change the settings in Split. Start by splitting the nonsecret text “Scatter Seeds” with k=2, n=3 and testing restoration.
+
 1. Open the page on an offline device. Enter text, an even number of hex digits, or complete English BIP-39 words. Text is encoded as UTF-8 without normalization. The limit is 256 bytes.
 2. Choose k and n. With 2-of-3, one share may be lost and one stolen share reveals no information. With k=n, losing even one share prevents restoration.
 3. Optionally enter a label of up to 40 characters and a date. Do not put the contents, storage location or owner on the label.
 4. Press Split. Shares appear only after all k-share subsets have been checked. Print each certificate separately and store it in a different place. Check printer memory, print queues and cloud sync for saved PDFs.
-5. To restore, paste at least k shares, one per line, or scan them one by one. After the checks and fingerprint pass, press Show to see the secret.
+5. To restore, paste at least k distinct shares from the same set, one per line, or scan them one by one. The camera stops after each scan; select Scan with camera again for the next share. Review the table and messages, then select Show to see the restored secret.
 
 English BIP-39 accepts 12, 15, 18, 21 or 24 words. Input is normalized with NFKD, lowercasing and whitespace cleanup, then checked against the word list and checksum. Four-letter abbreviations are rejected. The checksum has only 4–8 bits: with 12 words, a wrong word can still pass about 1 in 16 times. Compare every word with the source paper. The 25th passphrase is outside this tool and must be stored separately. Restoration shows numbered words and the original entropy in hex.
 
@@ -243,7 +255,19 @@ Ways of using this tool in particular:
 
 ## 🔒 Storage and limits
 
-Do not keep all shares in one place or photograph them into cloud storage. Once a year, check k shares in Restore without pressing Show. Do not make this the only backup. The person splitting sees the secret. The tool cannot prevent collusion by k people or issues with the device, extensions and print path. It trusts the browser's random generator. JavaScript cannot guarantee constant-time execution. Changes can be detected, but their author cannot be identified.
+### What not to do
+
+- Do not keep k or more shares together in one place or cloud account. That location alone would hold enough to restore the secret.
+- Do not save share photos or PDFs where they will sync to the cloud. Do not leave certificates on a shared printer.
+- Do not put the secret contents, storage location or owner in a label.
+- Do not choose k=n when you need protection against loss. Losing even one share prevents restoration.
+- Do not discard an existing backup before testing restoration. Do not leave the original secret in an unprotected plaintext file, or make this tool your only backup method.
+- Do not count copies of one share as distinct shares or mix different sets. Restoration needs different share numbers from the same set.
+- Do not assume Clear all clears the clipboard or printed data. Check copied data, print queues and printer memory too.
+
+### Checks and limits
+
+Once a year, check that the paper is present and legible. Test k shares in Restore without pressing Show. The person splitting sees the secret. The tool cannot prevent collusion by holders of k shares or issues with the device, extensions and print path. It trusts browser randomness. JavaScript cannot guarantee constant-time execution. CRC and fingerprints help find errors and inconsistencies; they do not authenticate the creator or guarantee that deliberate changes are absent.
 
 The author does not encourage misuse.
 
