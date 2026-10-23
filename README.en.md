@@ -26,13 +26,27 @@ The downloaded `index.html` also works through `file://`. The page makes no exte
 
 ## 📸 Screenshots
 
-| State | Light | Dark |
-|---|---|---|
-| Split | ![Split, English, light](assets/en/light/split.png) | ![Split, English, dark](assets/en/dark/split.png) |
-| Share certificates | ![Share certificates, English, light](assets/en/light/shares.png) | ![Share certificates, English, dark](assets/en/dark/shares.png) |
-| Print preview | ![A4 certificate, English, light](assets/en/light/print.png) | ![A4 certificate, English, dark](assets/en/dark/print.png) |
-| Restore and checks | ![Checks, English, light](assets/en/light/restore.png) | ![Checks, English, dark](assets/en/dark/restore.png) |
-| Storage guide | ![Storage guide, English, light](assets/en/light/guide.png) | ![Storage guide, English, dark](assets/en/dark/guide.png) |
+These screenshots show light mode. Use the “◐” button at the top right to switch to dark mode.
+
+![Split](assets/en/light/split.png)
+
+> *Split*
+
+![Share certificates](assets/en/light/shares.png)
+
+> *Share certificates*
+
+![Print preview](assets/en/light/print.png)
+
+> *Print preview*
+
+![Restore and checks](assets/en/light/restore.png)
+
+> *Restore and checks*
+
+![Storage guide](assets/en/light/guide.png)
+
+> *Storage guide*
 
 The [Japanese README](README.md) shows the same states. Screenshots use only the demo value in `test/fixtures/vectors.json`. Random coefficients and set IDs change between captures.
 

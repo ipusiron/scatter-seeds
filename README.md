@@ -56,13 +56,27 @@ Scatter Seedsは、秘密をシャミアの秘密分散でn枚の紙に分け、
 
 ## 📸 スクリーンショット
 
-| 状態 | ライト | ダーク |
-|---|---|---|
-| 分ける | ![分ける画面・日本語・ライト](assets/ja/light/split.png) | ![分ける画面・日本語・ダーク](assets/ja/dark/split.png) |
-| 共有の証書 | ![共有の証書・日本語・ライト](assets/ja/light/shares.png) | ![共有の証書・日本語・ダーク](assets/ja/dark/shares.png) |
-| 印刷プレビュー | ![A4の証書・日本語・ライト](assets/ja/light/print.png) | ![A4の証書・日本語・ダーク](assets/ja/dark/print.png) |
-| 戻す・検査表 | ![検査表・日本語・ライト](assets/ja/light/restore.png) | ![検査表・日本語・ダーク](assets/ja/dark/restore.png) |
-| 保管の指針 | ![保管の指針・日本語・ライト](assets/ja/light/guide.png) | ![保管の指針・日本語・ダーク](assets/ja/dark/guide.png) |
+以下はライトモードの画面です。画面右上の「◐」ボタンでダークモードに切り替えられます。
+
+![分ける](assets/ja/light/split.png)
+
+> *分ける*
+
+![共有の証書](assets/ja/light/shares.png)
+
+> *共有の証書*
+
+![印刷プレビュー](assets/ja/light/print.png)
+
+> *印刷プレビュー*
+
+![戻す・検査表](assets/ja/light/restore.png)
+
+> *戻す・検査表*
+
+![保管の指針](assets/ja/light/guide.png)
+
+> *保管の指針*
 
 [英語画面の同じ状態](README.en.md)も掲載しています。撮影には`test/fixtures/vectors.json`のデモ値だけを使っています。共有の乱数とセットIDは撮影ごとに変わります。
 

@@ -45,8 +45,8 @@ test('README screenshots and directory entries refer to present files', () => {
   for (const [content, language] of [[ja, 'ja'], [en, 'en']]) {
     const images = [...content.matchAll(/!\[[^\]]+\]\((assets\/[a-z]+\/(?:light|dark)\/[a-z]+\.png)\)/g)]
       .map(match => match[1]);
-    assert.equal(images.length, 10);
-    assert.equal(new Set(images).size, 10);
+    assert.deepEqual(images, ['split', 'shares', 'print', 'restore', 'guide']
+      .map(state => `assets/${language}/light/${state}.png`));
     for (const image of images) {
       assert.ok(image.startsWith(`assets/${language}/`));
       assert.ok(fs.existsSync(path.join(root, image)), image);
