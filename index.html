@@ -74,22 +74,48 @@
     <section id="panel-restore" class="panel" role="tabpanel" aria-labelledby="tab-restore" hidden>
       <h2 data-i18n="restoreTitle"></h2>
       <p data-i18n="restoreIntro"></p>
+      <div class="restore-preparation">
+        <h3 data-i18n="restorePrepareTitle"></h3>
+        <p data-i18n="restorePrepare"></p>
+        <p class="note" data-i18n="restoreExample"></p>
+      </div>
+      <h3 data-i18n="restoreInputTitle"></h3>
       <label class="stack"><span data-i18n="sharesLabel"></span>
-        <textarea id="restore-input" rows="7" autocomplete="off" spellcheck="false" autocapitalize="off"></textarea></label>
+        <textarea id="restore-input" rows="5" autocomplete="off" spellcheck="false" autocapitalize="off"
+                  aria-describedby="restore-input-help restore-line-help"></textarea></label>
+      <p id="restore-input-help" class="note" data-i18n="restoreInputHelp"></p>
+      <p id="restore-line-help" class="note" data-i18n="restoreLineHelp"></p>
       <div class="actions"><button id="restore-button" type="button" data-i18n="restoreAction"></button>
-        <button id="camera-button" type="button" data-i18n="cameraAction"></button>
+        <button id="camera-button" type="button" data-i18n="cameraAction" aria-describedby="camera-help"></button>
         <button id="stop-camera" type="button" data-i18n="stopCamera" hidden></button>
         <button id="clear-restore" type="button" data-i18n="clear"></button></div>
+      <p id="camera-help" class="note" data-i18n="restoreCameraHelp"></p>
+      <p class="note" data-i18n="restoreClearHelp"></p>
       <div id="camera-view" hidden><video id="camera-video" autoplay playsinline muted></video>
         <canvas id="camera-canvas" hidden></canvas></div>
       <p id="camera-status" role="status"></p>
-      <p id="restore-status" role="status" aria-live="polite"></p>
-      <div class="table-frame"><table id="check-table" hidden><caption data-i18n="checkCaption"></caption>
-        <thead><tr><th data-i18n="shareColumn"></th><th data-i18n="formatColumn"></th>
-          <th>CRC</th><th data-i18n="setColumn"></th><th>k / n</th><th>x</th></tr></thead>
-        <tbody id="check-rows"></tbody></table></div>
+      <h3 data-i18n="restoreCheckTitle"></h3>
+      <p id="restore-status" class="restore-status" role="status" aria-live="polite"></p>
+      <p id="restore-summary" hidden></p>
+      <div id="restore-checks" hidden>
+        <p data-i18n="restoreTableNote"></p>
+        <div class="table-frame"><table id="check-table" hidden><caption data-i18n="checkCaption"></caption>
+          <thead><tr><th data-i18n="shareColumn"></th><th data-i18n="formatColumn"></th>
+            <th>CRC</th><th data-i18n="setColumn"></th><th data-i18n="thresholdColumn"></th><th data-i18n="xColumn"></th></tr></thead>
+          <tbody id="check-rows"></tbody></table></div>
+        <ul id="restore-issues" class="reading-list" hidden></ul>
+        <details class="restore-check-help">
+          <summary data-i18n="restoreLegendTitle"></summary>
+          <ul class="reading-list">
+            <li data-i18n="restoreLegendFormat"></li><li data-i18n="restoreLegendCrc"></li>
+            <li data-i18n="restoreLegendSet"></li><li data-i18n="restoreLegendThreshold"></li>
+            <li data-i18n="restoreLegendX"></li><li data-i18n="restoreLegendSymbols"></li>
+          </ul>
+        </details>
+      </div>
       <div id="restored" class="restored" hidden>
-        <h3 data-i18n="restoredTitle"></h3><p id="restored-mask">••••••</p>
+        <h4 data-i18n="restoredTitle"></h4>
+        <p data-i18n="restoreRevealHelp"></p><p id="restored-mask">••••••</p>
         <pre id="restored-value" hidden></pre>
         <button id="reveal" type="button" data-i18n="reveal"></button>
       </div>

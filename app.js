@@ -15,7 +15,8 @@
   let splitMessage = null;
   let restoreRows = [];
   let restored = null;
-  let restoreMessage = null;
+  let restoreMessage = { key: 'restoreIdle', args: [] };
+  let restoreSummary = null;
   let cameraMessage = null;
   let revealed = false;
   let cameraStream = null;
@@ -205,21 +206,33 @@
     if (restoreMessage) setRestoreMessage(restoreMessage.key, restoreMessage.args);
     const body = $('check-rows'); body.replaceChildren();
     $('check-table').hidden = restoreRows.length === 0;
+    $('restore-checks').hidden = restoreRows.length === 0;
+    $('restore-summary').hidden = !restoreSummary;
+    $('restore-summary').textContent = restoreSummary ? t('restoreSummary')(...restoreSummary) : '';
+    const issues = $('restore-issues'); issues.replaceChildren();
+    const labels = [t('shareColumn'), t('formatColumn'), 'CRC', t('setColumn'), t('thresholdColumn'), t('xColumn')];
     for (const row of restoreRows) {
       const tr = document.createElement('tr');
       [row.index, ...row.cells].forEach((cell, i) => {
         const td = document.createElement('td');
-        td.dataset.label = [t('shareColumn'), t('formatColumn'), 'CRC', t('setColumn'), 'k / n', 'x'][i];
-        td.textContent = i === 0 ? String(cell) : t(cell);
+        td.dataset.label = labels[i];
+        const content = element('span', 'check-cell-content', i === 0 ? String(cell) : t(cell));
+        if (row.meta && i >= 3) {
+          const value = [row.meta.setId, `${row.meta.k} / ${row.meta.n}`, row.meta.x][i - 3];
+          content.append(element('span', 'check-meta', String(value)));
+        }
+        td.append(content);
         tr.append(td);
       });
       body.append(tr);
+      for (const key of row.issues) issues.append(element('li', '', t('restoreRowIssue')(row.index, t(key))));
     }
+    issues.hidden = !issues.children.length;
     $('restored').hidden = !restored;
     $('restored-value').hidden = !revealed;
     $('restored-mask').hidden = revealed;
     $('reveal').textContent = t(revealed ? 'conceal' : 'reveal');
-    if (restored && revealed) $('restored-value').textContent = formatRestored(restored);
+    $('restored-value').textContent = restored && revealed ? formatRestored(restored) : '';
   }
   function formatRestored(result) {
     if (result.type === 1) {
@@ -239,8 +252,11 @@
       let p, error = null;
       try { p = ScatterCore.parseShare(lines[i]); } catch (caught) { error = caught.message; }
       const cells = ['pending', 'pending', 'pending', 'pending', 'pending'];
+      const issues = [];
       if (error) {
         invalid = true;
+        issues.push(error === 'crc' ? 'rowCrc' : error === 'version' ? 'rowVersion' :
+          error === 'x=0' || error === 'x>n' ? 'rowX' : error === 'k/n' ? 'rowThreshold' : 'rowFormat');
         if (error === 'crc') { cells[0] = 'ok'; cells[1] = 'bad'; }
         else if (error === 'x=0' || error === 'x>n') { cells[0] = 'ok'; cells[1] = 'ok'; cells[4] = 'bad'; }
         else if (error === 'k/n') { cells[0] = 'ok'; cells[1] = 'ok'; cells[3] = 'bad'; }
@@ -251,20 +267,25 @@
         cells[2] = p.setId === first.setId ? 'ok' : 'bad';
         cells[3] = p.k === first.k && p.n === first.n && p.data.length === first.data.length ? 'ok' : 'bad';
         cells[4] = xs.has(p.x) ? 'duplicate' : 'ok';
-        if (cells.slice(2).some(cell => cell !== 'ok')) invalid = true;
+        if (cells[2] !== 'ok') issues.push('rowSet');
+        if (cells[3] !== 'ok') issues.push('rowThreshold');
+        if (cells[4] !== 'ok') issues.push('rowDuplicate');
+        if (issues.length) invalid = true;
         xs.add(p.x); parsed.push(p);
       }
-      rows.push({ index: i + 1, cells });
+      rows.push({ index: i + 1, cells, issues, meta: p || null });
     }
     return { rows, parsed, invalid };
   }
   function restoreSecret() {
-    restored = null; revealed = false;
+    restored = null; revealed = false; restoreSummary = null;
     const lines = $('restore-input').value.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
     if (!lines.length) { restoreRows = []; setRestoreMessage('noShares'); renderRestoration(); return; }
     const checked = checkShareRows(lines);
     restoreRows = checked.rows;
-    if (checked.invalid) { setRestoreMessage('mixed'); renderRestoration(); return; }
+    if (checked.invalid) { setRestoreMessage('invalidShares'); renderRestoration(); return; }
+    const first = checked.parsed[0];
+    restoreSummary = [first.setId, first.k, first.n, checked.parsed.length];
     let result;
     try { result = ScatterCore.combine(lines); }
     catch (_) { setRestoreMessage('mixed'); renderRestoration(); return; }
@@ -274,16 +295,23 @@
     try { formatRestored(result); }
     catch (_) { setRestoreMessage(result.type === 1 ? 'badText' : 'badType'); renderRestoration(); return; }
     restored = result;
+    for (const row of restoreRows) {
+      if (result.inconsistent.includes(row.meta.x)) row.issues.push('rowExtra');
+    }
     setRestoreMessage(result.inconsistent.length ? 'inconsistent' : 'restoredReady',
       result.inconsistent.length ? [result.inconsistent] : []);
     renderRestoration();
   }
+  $('restore-input').addEventListener('input', () => {
+    restoreRows = []; restored = null; revealed = false; restoreSummary = null;
+    setRestoreMessage('restoreEdited'); renderRestoration();
+  });
   $('restore-button').addEventListener('click', restoreSecret);
   $('reveal').addEventListener('click', () => { revealed = !revealed; renderRestoration(); });
   $('clear-restore').addEventListener('click', () => {
     stopCamera(); $('restore-input').value = ''; restoreRows = []; restored = null; revealed = false;
-    restoreMessage = null; cameraMessage = null;
-    $('restore-status').textContent = ''; $('camera-status').textContent = '';
+    restoreSummary = null; cameraMessage = null;
+    setRestoreMessage('restoreCleared'); $('camera-status').textContent = '';
     renderRestoration();
   });
   function stopCamera() {
@@ -294,6 +322,9 @@
     $('camera-video').srcObject = null;
     $('camera-canvas').width = 0; $('camera-canvas').height = 0;
     $('camera-view').hidden = true; $('stop-camera').hidden = true;
+    if (cameraMessage === 'cameraRunning') {
+      cameraMessage = 'cameraStopped'; $('camera-status').textContent = t(cameraMessage);
+    }
   }
   function scanCamera() {
     if (!cameraStream) return;
