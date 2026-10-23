@@ -6,6 +6,22 @@
   'use strict';
   return Object.freeze({
     ja: {
+      inputSize: size => "現在 {size} / 256 バイト".replace("{size}", String(size)),
+      inputEntropySize: size => "元の乱数：{size} / 256 バイト".replace("{size}", String(size)),
+      inputTooLong: "入力が長すぎます。上限は256バイトです。BIP-39は12〜24語を入力してください。",
+      inputHexPending: "16進は0〜9・A〜Fを偶数桁で入力してください。上限は512桁（256バイト）です。",
+      inputBip39Pending: "BIP-39の完全な英単語を入力してください。12・15・18・21・24語とチェックサムの検査後、元の乱数のサイズを表示します。",
+      inputOverLimit: "256バイトを超えています。入力を短くしてください。",
+      splitEdited: "入力が変わったため、前の証書を消しました。もう一度「分ける」を押してください。",
+      qrEnlarge: "QRを拡大",
+      qrHelp: "選んだ共有1枚のQRです。証書の共有番号とセットIDを確認してください。",
+      cameraStarting: "カメラの開始を待っています。「カメラを止める」で中止できます。",
+      copyRestored: "元のテキストをコピー",
+      restoredTextHelp: "テキストは引用符付きのJSON形式で表示します。改行・タブ・バックスラッシュなどはエスケープして区別します。" +
+        "「元のテキストをコピー」で、引用符や表示用のエスケープを含めず、元のテキストを取得できます。",
+      restoredCopied: "元のテキストをコピーしました。使用後はクリップボードの内容にも注意してください。",
+      restoredCopyFailed: "コピーできませんでした。表示用の引用符やエスケープをそのまま使わず、別の対応ブラウザーかREADMEのPython --raw手順で元のテキストを取得してください。",
+      helpSplitUpdates: "入力欄の下で現在のバイト数を確認できる。BIP-39は元の乱数のバイト数を表示する。入力や枚数・ラベル・日付を変えると前の証書は消えるので、もう一度分ける。証書の「QRを拡大」で選んだ1枚を大きく確認できる。",
       theme: '明暗を切り替える', language: '英語に切り替える', help: 'ヘルプ', tablist: '操作のタブ',
       subtitle: '秘密をn枚の紙に分け、k枚が集まれば戻せます。',
       privacy: 'この画面は外部と通信しません。オフラインの端末で使うのが最も安全です。',
@@ -128,7 +144,7 @@
       restoreLegendThreshold: "枚数 k/n・長さ：復元に必要な枚数k、作った総数n、共有データの長さが一致するか確認する。✕なら同じセットの元の証書を使う。",
       restoreLegendX: "共有番号 x：証書のNo.。同じ番号を2回入力すると重複になる。重複行を取り除き、異なる番号の共有を追加する。",
       restoreLegendSymbols: "✓はその項目の検査に合格、✕は確認が必要、—は前の項目で止まり未検査。CRCや指紋が合っても、作成者や意図的な改ざんがないことを保証しない。",
-      restoreRevealHelp: "検査後も秘密は目隠ししています。「表示」で確認し、「隠す」で再び隠せます。BIP-39は番号つきの単語と元の乱数を表示します。使い終わったら「すべて消す」を押してください。",
+      restoreRevealHelp: "検査直後は秘密を目隠しします。「表示」で確認し、「隠す」で再び隠せます。BIP-39は番号つきの単語と元の乱数を表示します。使い終わったら「すべて消す」を押してください。",
       shareColumn: "入力順",
       thresholdColumn: "枚数 k/n・長さ",
       xColumn: "共有番号 x",
@@ -136,7 +152,7 @@
       mixed: "共有を検査できませんでした。入力した各行が同じセットの完全な共有か確認してください。",
       invalidShares: "復元を止めました。表の✕と下の説明を確認し、該当する共有を直してから再検査してください。",
       fingerprintBad: "復元後の指紋（内容の確認用データ）が一致しません。改ざんか、別の秘密の共有が混ざっている可能性があります。値は表示しません。元の証書を確認して読み直してください。",
-      restoredReady: "復元後の指紋（内容の確認用データ）が一致しました。秘密は目隠ししています。「表示」で確認できます。",
+      restoredReady: "復元後の指紋（内容の確認用データ）が一致しました。下の欄で秘密を表示したり、隠したりできます。",
       cameraRunning: "カメラに証書のQR全体を映してください。1枚読むと自動で停止します。",
       cameraRead: "共有を1枚追加し、自動で検査しました。続ける場合は「カメラで読む」をもう一度押してください。",
       cameraStopped: "カメラを止めました。追加した共有は入力欄に残っています。",
@@ -154,6 +170,29 @@
       close: '閉じる'
     },
     en: {
+      inputSize: size => "Current size: {size} / 256 bytes".replace("{size}", String(size)),
+      inputEntropySize: size => "Original entropy: {size} / 256 bytes".replace("{size}", String(size)),
+      inputTooLong: "The input is too long. The limit is 256 bytes. For BIP-39, enter 12 to 24 words.",
+      inputHexPending: "Enter an even number of hexadecimal digits (0–9, A–F). The limit is 512 digits (256 bytes).",
+      inputBip39Pending: "Enter complete English BIP-39 words. The original entropy size ap" +
+        "pears after checking 12, 15, 18, 21 or 24 words and their checksu" +
+        "m.",
+      inputOverLimit: "The 256-byte limit has been exceeded. Shorten the input.",
+      splitEdited: "The input changed, so the previous certificates were removed. Select Split again.",
+      qrEnlarge: "Enlarge QR",
+      qrHelp: "This is the QR code for one selected share. Check its share number and set ID against the certificate.",
+      cameraStarting: "Waiting for the camera to start. Select Stop camera to cancel.",
+      copyRestored: "Copy original text",
+      restoredTextHelp: "Text is shown as a quoted JSON string with escapes for newlines, tabs and backslashes. " +
+        "Copy original text retrieves the original text without the display quotes or escapes.",
+      restoredCopied: "Original text copied. Remember to manage the clipboard contents after use.",
+      restoredCopyFailed: "Copy failed. Do not use the display quotes or escapes as the orig" +
+        "inal text. Use another supported browser or the Python --raw proc" +
+        "edure in the README.",
+      helpSplitUpdates: "The input counter shows the current byte size, or the original en" +
+        "tropy size for BIP-39. Changing the input, counts, label or date " +
+        "removes the previous certificates; split again. Enlarge QR shows " +
+        "one selected share at a larger size.",
       theme: 'Switch light or dark theme', language: 'Switch to Japanese', help: 'Help', tablist: 'Tool tabs',
       subtitle: 'Split a secret into n paper shares; any k can restore it.',
       privacy: 'This page makes no external connections. An offline device is safest.',
@@ -341,7 +380,7 @@
       restoreLegendSymbols: "✓ means that check passed, ✕ needs attention, and — means an earlier check stopped further" +
         " checks. CRC and fingerprints do not authenticate the creator or rule out deliberate chang" +
         "es.",
-      restoreRevealHelp: "The secret stays concealed after verification. Select Show to reveal it and Hide to concea" +
+      restoreRevealHelp: "The secret is initially concealed after verification. Select Show to reveal it and Hide to concea" +
         "l it again. BIP-39 shows numbered words and original entropy. Select Clear all when finish" +
         "ed.",
       shareColumn: "Input order",
@@ -355,8 +394,7 @@
       fingerprintBad: "The restored fingerprint (a content check value) did not match. Shares may have been chang" +
         "ed or mixed from different secrets. No value is shown. Check the original certificates and" +
         " read them again.",
-      restoredReady: "The restored fingerprint (a content check value) matched. The secret is concealed. Select " +
-        "Show to reveal it.",
+      restoredReady: "The restored fingerprint (a content check value) matched. Use the controls below to show or hide the secret.",
       cameraRunning: "Keep the whole certificate QR code in view. The camera stops after reading one share.",
       cameraRead: "One share was added and checked automatically. Select Scan with camera again to add anothe" +
         "r.",

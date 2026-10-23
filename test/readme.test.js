@@ -89,6 +89,7 @@ test('README screenshots and directory entries refer to present files', () => {
     'vendor/LICENSE-qrcode-generator.txt', 'vendor/LICENSE-jsQR.txt', 'test/core.test.js',
     'test/static.test.js', 'test/contrast.test.js', 'test/format.test.js',
     'test/readme.test.js', 'test/interface.browser.py',
+    'test/restore-output.test.js', 'test/improvements.browser.py',
     'test/fixtures/vectors.json', 'test/fixtures/bip39-english.txt', '.github/workflows/test.yml'];
   for (const file of files) {
     const name = path.basename(file);
@@ -115,7 +116,7 @@ test('F: README Python script restores every reference set', t => {
       cwd: root, input: vector.shares.slice(0, vector.k).join('\n') + '\n', encoding: 'utf8'
     });
     assert.equal(result.status, 0, `${vector.name}: ${result.stderr}`);
-    if (vector.type === 1) assert.equal(result.stdout.trim(), 'Scatter Seeds');
+    if (vector.type === 1) assert.equal(JSON.parse(result.stdout.trim()), 'Scatter Seeds');
     else {
       assert.ok(result.stdout.includes(vector.S_hex.toUpperCase()));
       assert.equal(result.stdout.trim().split(/\r?\n/)[0], B.entropyToMnemonic(C.unhex(vector.S_hex)));

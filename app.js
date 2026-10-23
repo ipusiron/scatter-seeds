@@ -21,6 +21,10 @@
   let revealed = false;
   let cameraStream = null;
   let cameraFrame = null;
+  let cameraGeneration = 0;
+  let cameraPending = false;
+  let splitSnapshot = null;
+  let qrOpener = null;
   const t = key => ScatterMessages[language][key];
   function render() {
     document.documentElement.lang = language;
@@ -35,6 +39,8 @@
       $('panel-' + name).hidden = !selected;
     });
     renderThreshold();
+    renderInputSize();
+    if (shares.length) ensureCurrentShares();
     if (shares.length) renderCards();
     if (splitMessage) setSplitMessage(splitMessage.key, splitMessage.args);
     renderGuideThreshold();
@@ -76,7 +82,41 @@
       ? t('thresholdHint')(n - k, k - 1) + (k === n ? ' ' + t('thresholdAll') : '') : t('invalidThreshold');
     $('bip39-note').hidden = $('secret-kind').value !== 'bip39';
   }
-  for (const id of ['split-k', 'split-n', 'secret-kind']) $(id).addEventListener('input', renderThreshold);
+  const splitFields = ['secret-input', 'secret-kind', 'split-k', 'split-n', 'share-label', 'print-date'];
+  const currentSplitSnapshot = () => JSON.stringify(splitFields.map(id => $(id).value));
+  function invalidateSplit() {
+    const hadOutput = shares.length || $('split-button').disabled;
+    splitGeneration++; discardShares();
+    $('split-button').disabled = false;
+    $('split-progress').hidden = true; $('progress-text').textContent = '';
+    if (hadOutput) setSplitMessage('splitEdited');
+  }
+  function ensureCurrentShares() {
+    if (shares.length && splitSnapshot === currentSplitSnapshot()) return true;
+    invalidateSplit(); return false;
+  }
+  for (const id of splitFields) $(id).addEventListener('input', () => {
+    invalidateSplit(); renderThreshold(); renderInputSize();
+  });
+  function renderInputSize() {
+    const raw = $('secret-input').value, kind = $('secret-kind').value;
+    let size = 0, issue = '';
+    if (raw.length > 4096) issue = t('inputTooLong');
+    else if (kind === 'text') size = new TextEncoder().encode(raw).length;
+    else if (kind === 'bytes') {
+      if (raw.trim() && !/^(?:[0-9a-f]{2})+$/i.test(raw.trim())) issue = t('inputHexPending');
+      else size = raw.trim().length / 2;
+    } else if (raw.trim()) {
+      try { size = ScatterBIP39.mnemonicToEntropy(raw).length; }
+      catch (_) { issue = t('inputBip39Pending'); }
+    }
+    const invalid = !!issue || size > ScatterCore.MAX_SECRET;
+    const counter = $('input-size');
+    counter.textContent = issue || t(kind === 'bip39' ? 'inputEntropySize' : 'inputSize')(size);
+    if (!issue && size > ScatterCore.MAX_SECRET) counter.textContent += ' ' + t('inputOverLimit');
+    counter.classList.toggle('input-error', invalid);
+    $('secret-input').setAttribute('aria-invalid', String(invalid));
+  }
   function readSecret() {
     const raw = $('secret-input').value, kind = $('secret-kind').value;
     if (raw.length > 4096) throw taggedError(kind === 'bip39' ? 'invalidBip39' : 'invalidSecret');
@@ -101,12 +141,17 @@
   }
   const yieldFrame = () => new Promise(resolve => setTimeout(resolve, 0));
   function discardShares() {
-    shares = []; shareMeta = null;
+    shares = []; shareMeta = null; splitSnapshot = null;
+    if ($('qr-dialog').open) $('qr-dialog').close();
+    $('qr-large-image').removeAttribute('src');
+    $('print-button').disabled = true;
     $('share-cards').replaceChildren(); $('print-controls').hidden = true;
     $('instruction-page').hidden = true; $('print-instructions').checked = false;
   }
   async function splitSecret() {
     const generation = ++splitGeneration;
+    const snapshot = currentSplitSnapshot();
+    const date = $('print-date').value;
     discardShares(); splitMessage = null; $('split-status').textContent = '';
     $('split-progress').hidden = true;
     let candidates;
@@ -135,12 +180,16 @@
         }
       }
       if (generation !== splitGeneration) return;
-      shares = candidates;
-      shareMeta = { k, n, setId: ScatterCore.hex(setId), label, date: $('print-date').value };
+      if (snapshot !== currentSplitSnapshot()) { invalidateSplit(); return; }
+      shares = candidates; splitSnapshot = snapshot;
+      shareMeta = { k, n, setId: ScatterCore.hex(setId), label, date };
+      $('print-button').disabled = false;
       renderCards(); $('print-controls').hidden = false;
       setSplitMessage('verified', [subsets.length]);
     } catch (error) {
-      discardShares(); setSplitMessage(error.key || 'verificationFailed', error.args);
+      if (generation === splitGeneration) {
+        discardShares(); setSplitMessage(error.key || 'verificationFailed', error.args);
+      }
     } finally {
       if (generation === splitGeneration) {
         $('split-button').disabled = false; $('split-progress').hidden = true;
@@ -169,27 +218,56 @@
       card.append(element('p', 'share-string', 'SSS1- ' + ScatterCore.group4(share)));
       const qr = element('img', 'qr-image');
       qr.alt = 'QR · ' + t('shareHeading')(index + 1, shareMeta.n);
-      qr.src = ScatterQR.make(share).createDataURL(3, 8);
+      qr.src = ScatterQR.make(share).createDataURL(3, 12);
       card.append(qr, element('p', '', t('printHelp')(shareMeta.k)),
         element('p', 'url', 'https://ipusiron.github.io/scatter-seeds/'));
       const actions = element('div', 'card-actions');
       const copy = element('button', '', t('copy')); copy.type = 'button';
       copy.addEventListener('click', async () => {
-        try { await navigator.clipboard.writeText(share); setSplitMessage('copied'); }
-        catch (_) { setSplitMessage('copyFailed'); }
+        if (!ensureCurrentShares()) return;
+        const generation = splitGeneration;
+        try {
+          await navigator.clipboard.writeText(share);
+          if (generation === splitGeneration) setSplitMessage('copied');
+        } catch (_) {
+          if (generation === splitGeneration) setSplitMessage('copyFailed');
+        }
       });
-      actions.append(copy); card.append(actions); root.append(card);
+      const enlarge = element('button', 'qr-enlarge', t('qrEnlarge'));
+      enlarge.type = 'button'; enlarge.setAttribute('aria-haspopup', 'dialog');
+      enlarge.setAttribute('aria-label', t('qrEnlarge') + ' · ' + t('shareHeading')(index + 1, shareMeta.n));
+      enlarge.addEventListener('click', () => {
+        if (!ensureCurrentShares()) return;
+        qrOpener = enlarge;
+        $('qr-title').textContent = t('shareHeading')(index + 1, shareMeta.n);
+        $('qr-set').textContent = t('setId') + ' · ' + shareMeta.setId + ' · ' + t('restoreCount')(shareMeta.k);
+        $('qr-large-image').src = ScatterQR.make(share).createDataURL(8, 32);
+        $('qr-large-image').alt = qr.alt;
+        $('qr-dialog').showModal(); $('qr-close').focus();
+      });
+      actions.append(copy, enlarge); card.append(actions); root.append(card);
     });
   }
+  $('qr-close').addEventListener('click', () => $('qr-dialog').close());
+  $('qr-dialog').addEventListener('keydown', event => {
+    if (event.key === 'Tab') { event.preventDefault(); $('qr-close').focus(); }
+  });
+  $('qr-dialog').addEventListener('close', () => {
+    $('qr-large-image').removeAttribute('src');
+    $('qr-title').textContent = ''; $('qr-set').textContent = '';
+    if (qrOpener && qrOpener.isConnected) qrOpener.focus();
+    qrOpener = null;
+  });
   $('split-button').addEventListener('click', splitSecret);
   $('clear-split').addEventListener('click', () => {
     splitGeneration++; discardShares();
     $('secret-input').value = ''; $('share-label').value = ''; $('print-date').value = '';
     setSplitMessage('clipboardNote'); $('split-progress').hidden = true; $('progress-text').textContent = '';
-    $('split-button').disabled = false;
+    $('split-button').disabled = false; renderInputSize();
   });
   $('print-instructions').addEventListener('change', () => { $('instruction-page').hidden = !$('print-instructions').checked; });
-  $('print-button').addEventListener('click', () => window.print());
+  $('print-button').addEventListener('click', () => { if (ensureCurrentShares()) window.print(); });
+  window.addEventListener('beforeprint', () => { if (shares.length) ensureCurrentShares(); });
   function renderGuideThreshold() {
     const k = Number($('guide-k').value), n = Number($('guide-n').value);
     $('guide-threshold').textContent = Number.isInteger(k) && Number.isInteger(n) && 2 <= k && k <= n && n <= 16
@@ -233,11 +311,18 @@
     $('restored-mask').hidden = revealed;
     $('reveal').textContent = t(revealed ? 'conceal' : 'reveal');
     $('restored-value').textContent = restored && revealed ? formatRestored(restored) : '';
+    const showTextActions = !!restored && revealed && restored.type === 1;
+    $('restored-text-help').hidden = !showTextActions;
+    $('copy-restored').hidden = !showTextActions;
+    $('restored-copy-status').textContent = '';
+  }
+  function decodeRestoredText(result) {
+    return new TextDecoder('utf-8', { fatal: true, ignoreBOM: true }).decode(result.S);
   }
   function formatRestored(result) {
     if (result.type === 1) {
-      const decoded = new TextDecoder('utf-8', { fatal: true }).decode(result.S);
-      return decoded.replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,
+      const decoded = decodeRestoredText(result);
+      return JSON.stringify(decoded).replace(/[\u007f-\u009f\u2028-\u202e\u2066-\u2069\ufeff]/g,
         ch => '\\u' + ch.codePointAt(0).toString(16).padStart(4, '0').toUpperCase());
     }
     if (result.type === 2) return ScatterCore.hex(result.S);
@@ -306,6 +391,16 @@
     restoreRows = []; restored = null; revealed = false; restoreSummary = null;
     setRestoreMessage('restoreEdited'); renderRestoration();
   });
+  $('copy-restored').addEventListener('click', async () => {
+    const result = restored;
+    if (!result || !revealed || result.type !== 1) return;
+    try {
+      await navigator.clipboard.writeText(decodeRestoredText(result));
+      if (restored === result && revealed) $('restored-copy-status').textContent = t('restoredCopied');
+    } catch (_) {
+      if (restored === result && revealed) $('restored-copy-status').textContent = t('restoredCopyFailed');
+    }
+  });
   $('restore-button').addEventListener('click', restoreSecret);
   $('reveal').addEventListener('click', () => { revealed = !revealed; renderRestoration(); });
   $('clear-restore').addEventListener('click', () => {
@@ -315,6 +410,8 @@
     renderRestoration();
   });
   function stopCamera() {
+    cameraGeneration++; cameraPending = false;
+    $('camera-button').disabled = false;
     if (cameraFrame !== null) cancelAnimationFrame(cameraFrame);
     cameraFrame = null;
     if (cameraStream) cameraStream.getTracks().forEach(track => track.stop());
@@ -322,7 +419,7 @@
     $('camera-video').srcObject = null;
     $('camera-canvas').width = 0; $('camera-canvas').height = 0;
     $('camera-view').hidden = true; $('stop-camera').hidden = true;
-    if (cameraMessage === 'cameraRunning') {
+    if (cameraMessage === 'cameraRunning' || cameraMessage === 'cameraStarting') {
       cameraMessage = 'cameraStopped'; $('camera-status').textContent = t(cameraMessage);
     }
   }
@@ -350,20 +447,33 @@
     cameraFrame = requestAnimationFrame(scanCamera);
   }
   $('camera-button').addEventListener('click', async () => {
-    stopCamera(); cameraMessage = null;
+    if (cameraPending) return;
+    stopCamera();
+    const generation = cameraGeneration;
+    cameraPending = true; $('camera-button').disabled = true;
+    $('stop-camera').hidden = false;
+    cameraMessage = 'cameraStarting'; $('camera-status').textContent = t(cameraMessage);
+    let stream = null;
     try {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('unavailable');
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
-      $('camera-video').srcObject = cameraStream;
-      $('camera-view').hidden = false; $('stop-camera').hidden = false;
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      if (generation !== cameraGeneration) { stream.getTracks().forEach(track => track.stop()); return; }
+      cameraStream = stream;
+      $('camera-video').srcObject = stream;
+      $('camera-view').hidden = false;
       await $('camera-video').play();
+      if (generation !== cameraGeneration) { stream.getTracks().forEach(track => track.stop()); return; }
+      cameraPending = false;
       cameraMessage = 'cameraRunning'; $('camera-status').textContent = t(cameraMessage);
       cameraFrame = requestAnimationFrame(scanCamera);
     } catch (_) {
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      if (generation !== cameraGeneration) return;
       stopCamera(); cameraMessage = 'cameraUnavailable'; $('camera-status').textContent = t(cameraMessage);
     }
   });
   $('stop-camera').addEventListener('click', stopCamera);
   window.addEventListener('pagehide', stopCamera);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); });
   render();
 }());

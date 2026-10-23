@@ -241,6 +241,9 @@ font-size: .9rem;
 overflow-wrap: anywhere;
 }
 .certificate .card-actions {
+display: flex;
+flex-wrap: wrap;
+gap: .6rem;
 margin-top: .8rem;
 }
 .instructions {
@@ -362,6 +365,7 @@ padding: 1rem;
 margin-top: 1rem;
 }
 .restored pre {
+font-family: Consolas, 'Courier New', monospace;
 white-space: pre-wrap;
 overflow-wrap: anywhere;
 word-break: break-all;
@@ -444,6 +448,27 @@ background: var(--paper);
 display: inline-flex;
 align-items: center;
 min-height: 44px;
+}
+#input-size {
+display: block;
+margin-top: .4rem;
+}
+.input-error {
+font-weight: 700;
+border-left: 3px solid var(--line);
+padding-left: .5rem;
+}
+#qr-large-image {
+display: block;
+width: 100%;
+max-width: 640px;
+height: auto;
+margin: 1rem auto;
+background: white;
+image-rendering: pixelated;
+}
+#qr-set {
+overflow-wrap: anywhere;
 }
 dialog::backdrop {
 background: #0009;

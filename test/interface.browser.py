@@ -132,7 +132,7 @@ def restore_guidance_check(page, name, width):
         assert page.locator('#restore-issues').is_hidden()
         assert page.locator('#check-rows tr').first.locator('td').nth(3).inner_text().endswith('5EED1234')
         page.click('#reveal')
-        assert page.locator('#restored-value').inner_text() == 'Scatter Seeds'
+        assert json.loads(page.locator('#restored-value').inner_text()) == 'Scatter Seeds'
         page.click('#reveal')
         assert page.locator('#restored-value').inner_text() == ''
         page.click('#reveal')
@@ -192,7 +192,11 @@ def ordinary_browser(p, name):
         page.click('#language')
         assert page.locator('#tab-guide').get_attribute('aria-label') == 'Storage guide'
         assert 'All 3 subsets' in page.locator('#split-status').inner_text()
-        japanese = page.evaluate('() => document.body.textContent.match(/.{0,20}[\u3040-\u30ff\u3400-\u9fff].{0,20}/g)')
+        # English help intentionally uses the quoted Japanese character as a UTF-8 example.
+        japanese = page.evaluate("""() => {
+          const text = document.body.textContent.replaceAll('“あ”', '');
+          return text.match(/.{0,20}[\u3040-\u30ff\u3400-\u9fff].{0,20}/g);
+        }""")
         assert not japanese, [item.encode('ascii', 'replace').decode() for item in (japanese or [])]
         page.click('#tab-restore')
         shares = VECTORS['vectors'][0]['shares']
@@ -201,7 +205,7 @@ def ordinary_browser(p, name):
         assert page.locator('#restored').is_visible()
         assert page.locator('#restored-value').is_hidden()
         page.click('#reveal')
-        assert page.locator('#restored-value').inner_text() == 'Scatter Seeds'
+        assert json.loads(page.locator('#restored-value').inner_text()) == 'Scatter Seeds'
         page.fill('#restore-input', shares[0])
         page.click('#restore-button')
         assert page.locator('#restored').is_hidden()

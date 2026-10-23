@@ -2,8 +2,12 @@
 
 Run offline: python restore.py < shares.txt
 One complete SSS1 share per line. No data is written to disk.
+Text output is a quoted JSON string encoded as UTF-8.
+Use --raw for exact restored text bytes, with no added newline.
 """
+import argparse
 import hashlib
+import json
 import sys
 import zlib
 from pathlib import Path
@@ -104,26 +108,36 @@ def mnemonic(entropy):
 
 
 def safe_text(value):
-    return ''.join(f'\\u{ord(char):04X}' if ord(char) < 32 or 0x7F <= ord(char) <= 0x9F or
-                   0x202A <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 else char
-                   for char in value)
+    """Return unambiguous JSON text while exposing invisible control characters."""
+    quoted = json.dumps(value, ensure_ascii=False)
+    return ''.join(f'\\u{ord(char):04X}' if 0x7F <= ord(char) <= 0x9F or
+                   0x2028 <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 or
+                   ord(char) == 0xFEFF else char for char in quoted)
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--raw', action='store_true',
+                        help='write text secrets as exact UTF-8 bytes, without an added newline')
+    args = parser.parse_args()
     try:
         kind, secret, outside = restore(sys.stdin)
+        if args.raw and kind != 1:
+            raise ValueError('--raw requires a text secret; omit --raw for bytes or BIP-39')
         if kind == 1:
-            output = safe_text(secret.decode('utf-8', errors='strict'))
+            decoded = secret.decode('utf-8', errors='strict')
+            output = secret if args.raw else (safe_text(decoded) + '\n').encode('utf-8')
         elif kind == 2:
-            output = secret.hex().upper()
+            output = (secret.hex().upper() + '\n').encode('utf-8')
         else:
-            output = mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper()
+            output = (mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper() + '\n').encode('utf-8')
+        if outside:
+            print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
+        sys.stdout.buffer.write(output)
+        sys.stdout.buffer.flush()
     except (ValueError, UnicodeError, OSError) as error:
         print('Restore failed:', error, file=sys.stderr)
         return 1
-    if outside:
-        print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
-    print(output)
     return 0
 
 
