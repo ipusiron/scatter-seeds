@@ -103,7 +103,6 @@
       restoreIntro: "「分ける」で作った証書の文字列やQRから、元の秘密を復元します。必要な枚数と秘密の種別は共有から読み取るため、ここで設定する必要はありません。",
       restorePrepareTitle: "1. 同じセットの共有を集める",
       restorePrepare: "証書に書かれた「復元にk枚」以上を用意します。セットIDが同じで、No.の番号が異なる共有を選んでください。同じ共有のコピーは1枚として数えます。",
-      restoreExample: "例：No. 1 / 3、復元に2枚なら、作った総数は3枚、必要数は2枚です。No. 1とNo. 3でも戻せます。",
       restoreInputTitle: "2. 共有の文字列を貼る、またはQRを読む",
       restoreInputHelp: "入力するのは証書の「SSS1-」で始まる文字列全体です。元のパスワードやBIP-39の単語、セットIDだけを入力する欄ではありません。",
       restoreLineHelp: "1枚の共有を1行に入力し、次の共有の前で改行します。紙の折り返しは1行につなげてください。空白・ハイフン・小文字は受け付けますが、抜けた文字の補完はしません。",
@@ -289,8 +288,6 @@
       restorePrepareTitle: "1. Gather shares from the same set",
       restorePrepare: "Collect at least the number shown as “k shares to restore” on the certificate. Choose shar" +
         "es with the same set ID and different No. values. Copies of one share count as one.",
-      restoreExample: "Example: No. 1 / 3 and “2 shares to restore” means three shares were created and two are r" +
-        "equired. Shares No. 1 and No. 3 work too.",
       restoreInputTitle: "2. Paste share strings or scan QR codes",
       restoreInputHelp: "Enter the entire certificate string beginning with SSS1-. This field is for shares, not th" +
         "e original password, BIP-39 words or a set ID alone.",
