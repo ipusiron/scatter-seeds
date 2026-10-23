@@ -53,8 +53,22 @@
   });
   $('theme').addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; save('theme', theme); render(); });
   $('language').addEventListener('click', () => { language = language === 'ja' ? 'en' : 'ja'; save('language', language); render(); });
-  $('help').addEventListener('click', () => $('help-dialog').showModal());
+  $('help').addEventListener('click', () => {
+    $('help-dialog').showModal();
+    $('help-content').scrollTop = 0;
+    $('help-title').focus({ preventScroll: true });
+  });
   $('help-close').addEventListener('click', () => $('help-dialog').close());
+  $('help-dialog').addEventListener('keydown', event => {
+    if (event.key !== 'Tab') return;
+    const first = $('help-close');
+    const last = $('help-dialog').querySelector('.help-link');
+    if (event.shiftKey && [first, $('help-title')].includes(document.activeElement)) {
+      event.preventDefault(); last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault(); first.focus();
+    }
+  });
   function renderThreshold() {
     const k = Number($('split-k').value), n = Number($('split-n').value);
     $('threshold-hint').textContent = Number.isInteger(k) && Number.isInteger(n) && k >= 2 && n >= k && n <= 16

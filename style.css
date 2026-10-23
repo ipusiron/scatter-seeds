@@ -43,7 +43,7 @@ color: var(--button-ink);
 border-radius: .35rem;
 padding: .45rem .8rem;
 }
-button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, .help-content:focus-visible {
 outline: 3px solid var(--line);
 outline-offset: 3px;
 }
@@ -354,7 +354,65 @@ dialog {
 color: var(--ink);
 background: var(--card);
 border: 3px double var(--line);
-max-width: min(34rem, calc(100vw - 2rem));
+width: min(48rem, calc(100vw - 2rem));
+max-width: calc(100vw - 2rem);
+max-height: calc(100vh - 2rem);
+max-height: calc(100dvh - 2rem);
+padding: 0;
+overflow: hidden;
+}
+dialog[open] {
+display: flex;
+flex-direction: column;
+}
+.help-header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: .8rem;
+padding: 1rem;
+border-bottom: 1px solid var(--line);
+flex-shrink: 0;
+}
+.help-header h2 {
+font-size: 1.2rem;
+margin: 0;
+min-width: 0;
+}
+.help-header button {
+flex-shrink: 0;
+}
+.help-content {
+overflow-y: auto;
+min-height: 0;
+padding: 0 1rem 1rem;
+line-height: 1.65;
+overflow-wrap: anywhere;
+}
+.help-content section {
+border-top: 1px solid var(--line);
+margin-top: 1.2rem;
+padding-top: .4rem;
+}
+.help-content h4 {
+margin-bottom: .5rem;
+}
+.reading-list {
+padding-left: 1.4rem;
+line-height: 1.65;
+}
+.reading-list li + li {
+margin-top: .65rem;
+}
+.help-example {
+border-left: 4px solid var(--line);
+padding: .6rem .8rem;
+background: var(--paper);
+}
+.help-link {
+display: inline-flex;
+align-items: center;
+min-height: 44px;
 }
 dialog::backdrop {
 background: #0009;
