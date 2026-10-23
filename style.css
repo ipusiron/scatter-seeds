@@ -267,6 +267,43 @@ border: 2px solid var(--line);
 font-family: Consolas, 'Courier New', monospace;
 overflow-wrap: anywhere;
 }
+.restore-preparation {
+border-left: 4px solid var(--line);
+padding: .2rem .9rem;
+background: var(--paper);
+line-height: 1.6;
+}
+.restore-preparation h3 {
+margin-top: .6rem;
+}
+.restore-status {
+border: 2px solid var(--line);
+padding: .8rem;
+line-height: 1.6;
+}
+.restore-check-help {
+border: 1px solid var(--line);
+padding: .4rem .8rem;
+margin-top: 1rem;
+}
+.restore-check-help summary {
+min-height: 44px;
+padding: .6rem 0;
+cursor: pointer;
+font-weight: 600;
+}
+.restore-check-help summary:focus-visible {
+outline: 3px solid var(--line);
+outline-offset: 3px;
+}
+.check-cell-content {
+min-width: 0;
+overflow-wrap: anywhere;
+}
+.check-meta {
+display: block;
+font-family: Consolas, 'Courier New', monospace;
+}
 .table-frame {
 overflow-x: auto;
 max-width: 100%;

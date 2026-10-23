@@ -23,7 +23,7 @@
       invalidSecret: '秘密は1〜256バイトで入力してください。', invalidHex: '16進は偶数桁の0〜9・A〜Fで入力してください。',
       invalidThreshold: '2 ≤ k ≤ n ≤ 16 で入力してください。', invalidLabel: 'ラベルは40文字以内にしてください。',
       invalidBip39: 'BIP-39の語数・語彙・チェックサムを確認してください。',
-      unknownWord: (word, suggestions) => `語彙にない語「${word}」。候補: ${suggestions.join('、') || 'なし'}`, 
+      unknownWord: (word, suggestions) => `語彙にない語「${word}」。候補: ${suggestions.join('、') || 'なし'}`,
       verifying: (done, total) => `すべての組を検査中: ${done}/${total}`, verified: count => `${count}組すべてで復元できました。`,
       verificationFailed: '共有の復元検査に失敗しました。共有は表示しません。',
       shareHeading: (x, n) => `No. ${x} / ${n}`, restoreCount: k => `復元に${k}枚`, setId: 'セットID',
@@ -35,17 +35,15 @@
         '種別は01=テキスト、02=バイト列、03=BIP-39。末尾4バイトはSHA-256(種別‖秘密)の先頭4バイトです。' +
         'READMEのPythonスクリプトも保存してください。',
       clipboardNote: 'クリップボードは消せません。コピーした場合は端末側で処理してください。',
-      restoreTitle: '共有から戻す', restoreIntro: '共有の文字列またはQRを読み取ります。',
+      restoreTitle: '共有から戻す',
       sharesLabel: '共有の文字列（1行に1枚）', restoreAction: '検査して戻す', cameraAction: 'カメラで読む',
-      stopCamera: 'カメラを止める', cameraRunning: 'カメラのQRを読み取っています。',
+      stopCamera: 'カメラを止める',
       cameraUnavailable: 'このブラウザーではカメラを使えません。GitHub Pages版で読むか、文字列を貼り付けてください。',
-      cameraInvalid: '読み取ったQRは有効な共有ではありません。', cameraRead: '共有を1枚読み取りました。',
-      checkCaption: '共有ごとの検査', shareColumn: '共有', formatColumn: '書式', setColumn: 'セットID',
-      ok: '✓ 正常', bad: '✕ 異常', pending: '—', duplicate: '✕ 重複', noShares: '共有を入力してください。',
-      need: count => `あと${count}枚必要です。`, mixed: '異なるセット、k・n、または重複したxがあります。',
-      fingerprintBad: '改ざんか、別の秘密の共有が混ざっています。値は表示しません。',
-      inconsistent: xs => `✕ x=${xs.join(', ')} は最初のk枚から決まる多項式に乗りません。`,
-      restoredReady: '指紋が一致しました。秘密は目隠ししています。',
+      checkCaption: '共有ごとの検査', formatColumn: '書式', setColumn: 'セットID',
+      ok: '✓ 正常', bad: '✕ 異常', pending: '—', duplicate: '✕ 重複',
+      need: count => `あと${count}枚必要です。同じセットの別の番号を追加して、もう一度検査してください。`,
+      inconsistent: xs => `✕ 共有番号 x=${xs.join(', ')} が先頭k枚と食い違います。` +
+        `先頭k枚から復元した値の指紋は一致しましたが、追加分を含む全体の検査は通っていません。元の証書を確認してください。`,
       restoredTitle: '戻した秘密', reveal: '表示', conceal: '隠す', entropyHex: '元の乱数（16進）',
       badText: 'テキストとして復号できません。値は表示しません。', badType: '種別が不正です。値は表示しません。',
       guideTitle: '保管の指針', guideIntro: '失ってもよい枚数と、盗まれても漏れない枚数を確認します。',
@@ -102,6 +100,50 @@
         "るオフライン端末を使ってください。",
       helpChecks: "BIP-39のチェックサムが通っても、入力が元の語句と同じとは限りません。CRCと指紋も誤入力や共有の食い違いを見つけるための検査で、作成者や意図的な改ざんがないことを保証しま" +
         "せん。",
+      restoreIntro: "「分ける」で作った証書の文字列やQRから、元の秘密を復元します。必要な枚数と秘密の種別は共有から読み取るため、ここで設定する必要はありません。",
+      restorePrepareTitle: "1. 同じセットの共有を集める",
+      restorePrepare: "証書に書かれた「復元にk枚」以上を用意します。セットIDが同じで、No.の番号が異なる共有を選んでください。同じ共有のコピーは1枚として数えます。",
+      restoreExample: "例：No. 1 / 3、復元に2枚なら、作った総数は3枚、必要数は2枚です。No. 1とNo. 3でも戻せます。",
+      restoreInputTitle: "2. 共有の文字列を貼る、またはQRを読む",
+      restoreInputHelp: "入力するのは証書の「SSS1-」で始まる文字列全体です。元のパスワードやBIP-39の単語、セットIDだけを入力する欄ではありません。",
+      restoreLineHelp: "1枚の共有を1行に入力し、次の共有の前で改行します。紙の折り返しは1行につなげてください。空白・ハイフン・小文字は受け付けますが、抜けた文字の補完はしません。",
+      restoreCameraHelp: "カメラはQRを1枚読むと入力欄の末尾に追加し、自動で検査して停止します。次の1枚はもう一度「カメラで読む」を押してください。画像ファイルの読み込みには対応していません。",
+      restoreClearHelp: "「すべて消す」は、このタブの入力・検査結果・復元値を消し、カメラを止めます。クリップボード、印刷物、「分ける」タブの内容は消しません。",
+      restoreCheckTitle: "3. 検査結果を確認して秘密を表示する",
+      restoreIdle: "未検査です。共有を入力して「検査して戻す」を押してください。",
+      restoreEdited: "入力を変更したため、前の検査結果と復元値を消しました。「検査して戻す」を押してください。",
+      restoreCleared: "このタブの入力と結果を消しました。コピーした共有はクリップボード側で消してください。",
+      restoreTableNote: "表の「入力順」は空行を除いた上からの順番です。証書のNo.は「共有番号 x」に表示します。表がすべて✓でも、復元後の指紋検査が通るまでは秘密を表示しません。",
+      restoreLegendTitle: "検査表の見方と、✕が出たときの確認方法",
+      restoreLegendFormat: "書式：SSS1の接頭辞、文字、長さなどを確認する。✕なら証書から文字列全体を写し直す。",
+      restoreLegendCrc: "CRC：入力ミスを検出するための検査値。✕なら抜けた文字や取り違えがないか確認し、貼り直すかQRを読み直す。",
+      restoreLegendSet: "セットID：同時に分けて作った共有の目印。最初に正常に読み取れた共有と比べる。✕なら別のセットが混ざっていないか確認する。",
+      restoreLegendThreshold: "枚数 k/n・長さ：復元に必要な枚数k、作った総数n、共有データの長さが一致するか確認する。✕なら同じセットの元の証書を使う。",
+      restoreLegendX: "共有番号 x：証書のNo.。同じ番号を2回入力すると重複になる。重複行を取り除き、異なる番号の共有を追加する。",
+      restoreLegendSymbols: "✓はその項目の検査に合格、✕は確認が必要、—は前の項目で止まり未検査。CRCや指紋が合っても、作成者や意図的な改ざんがないことを保証しない。",
+      restoreRevealHelp: "検査後も秘密は目隠ししています。「表示」で確認し、「隠す」で再び隠せます。BIP-39は番号つきの単語と元の乱数を表示します。使い終わったら「すべて消す」を押してください。",
+      shareColumn: "入力順",
+      thresholdColumn: "枚数 k/n・長さ",
+      xColumn: "共有番号 x",
+      noShares: "共有がありません。SSS1-で始まる文字列を貼り付けるか、証書のQRを読んでください。",
+      mixed: "共有を検査できませんでした。入力した各行が同じセットの完全な共有か確認してください。",
+      invalidShares: "復元を止めました。表の✕と下の説明を確認し、該当する共有を直してから再検査してください。",
+      fingerprintBad: "復元後の指紋（内容の確認用データ）が一致しません。改ざんか、別の秘密の共有が混ざっている可能性があります。値は表示しません。元の証書を確認して読み直してください。",
+      restoredReady: "復元後の指紋（内容の確認用データ）が一致しました。秘密は目隠ししています。「表示」で確認できます。",
+      cameraRunning: "カメラに証書のQR全体を映してください。1枚読むと自動で停止します。",
+      cameraRead: "共有を1枚追加し、自動で検査しました。続ける場合は「カメラで読む」をもう一度押してください。",
+      cameraStopped: "カメラを止めました。追加した共有は入力欄に残っています。",
+      cameraInvalid: "このQRは有効なSSS1の共有ではありません。Scatter Seedsの証書を使うか、文字列を貼り付けてください。",
+      rowFormat: "文字列の形式を読めません。SSS1-から末尾までを1行に写し直してください。",
+      rowVersion: "この共有の版には対応していません。作成に使ったツールと復元手順を確認してください。",
+      rowCrc: "CRCが一致しません。証書から貼り直すか、QRを読み直してください。",
+      rowSet: "セットIDが先頭の有効な共有と異なります。同じセットの証書を集めてください。",
+      rowThreshold: "必要枚数・総数またはデータ長が一致しないか、不正です。元の証書を確認してください。",
+      rowX: "共有番号が範囲外です。証書から文字列全体を読み直してください。",
+      rowDuplicate: "同じ共有番号をすでに入力しています。この重複行を取り除き、必要なら別の番号を追加してください。",
+      rowExtra: "先頭k枚からの復元結果と食い違います。元の証書を確認してください。どの共有が改ざんされたかは、この結果だけでは決まりません。",
+      restoreSummary: (id, k, n, count) => `セットID ${id}：入力${count}枚／復元に${k}枚（作成${n}枚）。`,
+      restoreRowIssue: (index, message) => `入力順${index}：${message}`,
       close: '閉じる'
     },
     en: {
@@ -135,17 +177,15 @@
         'Type 01=text, 02=bytes, 03=BIP-39. The last four restored bytes are the first four bytes of ' +
         'SHA-256(type‖secret). Keep the Python script from README.',
       clipboardNote: 'This cannot clear the clipboard. Clear it on your device if you copied a share.',
-      restoreTitle: 'Restore from shares', restoreIntro: 'Enter share strings or scan a QR code.',
+      restoreTitle: 'Restore from shares',
       sharesLabel: 'Share strings (one per line)', restoreAction: 'Check and restore', cameraAction: 'Scan with camera',
-      stopCamera: 'Stop camera', cameraRunning: 'Scanning for a QR code.',
+      stopCamera: 'Stop camera',
       cameraUnavailable: 'Camera access is unavailable here. Use the GitHub Pages version or paste the share string.',
-      cameraInvalid: 'The scanned QR is not a valid share.', cameraRead: 'One share was scanned.',
-      checkCaption: 'Checks for each share', shareColumn: 'Share', formatColumn: 'Format', setColumn: 'Set ID',
-      ok: '✓ OK', bad: '✕ Invalid', pending: '—', duplicate: '✕ Duplicate', noShares: 'Enter at least one share.',
-      need: count => `${count} more share${count === 1 ? '' : 's'} needed.`, mixed: 'Different set, k/n, or duplicate x detected.',
-      fingerprintBad: 'A share was changed or belongs to another secret. No value is shown.',
-      inconsistent: xs => `✕ x=${xs.join(', ')} does not lie on the polynomial defined by the first k shares.`,
-      restoredReady: 'Fingerprint matched. The secret is concealed.',
+      checkCaption: 'Checks for each share', formatColumn: 'Format', setColumn: 'Set ID',
+      ok: '✓ OK', bad: '✕ Invalid', pending: '—', duplicate: '✕ Duplicate',
+      need: count => `${count} more share${count === 1 ? '' : 's'} needed. Add a different share number from the same set and check again.`,
+      inconsistent: xs => `✕ Share number x=${xs.join(', ')} disagrees with the first k shares. ` +
+        `The fingerprint from the first k shares matched, but the full set did not pass. Check the original certificates.`,
       restoredTitle: 'Restored secret', reveal: 'Show', conceal: 'Hide', entropyHex: 'Original entropy (hex)',
       badText: 'Cannot decode as text. No value is shown.', badType: 'Invalid type. No value is shown.',
       guideTitle: 'Storage guide', guideIntro: 'Check how many shares you can lose or expose.',
@@ -243,6 +283,83 @@
       helpChecks: "A passing BIP-39 checksum does not prove the words match the original. CRC and fingerpri" +
         "nts help find input errors and inconsistent shares; they do not authenticate the creator" +
         " or guarantee that deliberate changes are absent.",
+      restoreIntro: "Restore the original secret from certificate strings or QR codes created in Split. The req" +
+        "uired number of shares and secret type are read from the shares; you do not need to set th" +
+        "em here.",
+      restorePrepareTitle: "1. Gather shares from the same set",
+      restorePrepare: "Collect at least the number shown as “k shares to restore” on the certificate. Choose shar" +
+        "es with the same set ID and different No. values. Copies of one share count as one.",
+      restoreExample: "Example: No. 1 / 3 and “2 shares to restore” means three shares were created and two are r" +
+        "equired. Shares No. 1 and No. 3 work too.",
+      restoreInputTitle: "2. Paste share strings or scan QR codes",
+      restoreInputHelp: "Enter the entire certificate string beginning with SSS1-. This field is for shares, not th" +
+        "e original password, BIP-39 words or a set ID alone.",
+      restoreLineHelp: "Put one whole share on each line; start a new line before the next share. Join printed lin" +
+        "e wraps into one line. Spaces, hyphens and lowercase are accepted, but missing characters " +
+        "are not repaired.",
+      restoreCameraHelp: "A scan appends one share to the input, checks it automatically and stops the camera. Selec" +
+        "t Scan with camera again for the next share. Image file uploads are not supported.",
+      restoreClearHelp: "Clear all removes this tab’s input, checks and restored value, and stops the camera. It do" +
+        "es not clear the clipboard, printed copies or the Split tab.",
+      restoreCheckTitle: "3. Review the checks and reveal the secret",
+      restoreIdle: "Not checked yet. Enter shares, then select Check and restore.",
+      restoreEdited: "The input changed, so previous checks and the restored value were cleared. Select Check an" +
+        "d restore again.",
+      restoreCleared: "This tab’s input and results were cleared. Clear copied shares from the clipboard on your " +
+        "device.",
+      restoreTableNote: "Input order counts nonempty lines from top to bottom. The certificate No. appears as Share" +
+        " number x. All ✓ marks in the table are not enough: the restored fingerprint must also pas" +
+        "s before the secret is shown.",
+      restoreLegendTitle: "How to read the checks and resolve ✕ marks",
+      restoreLegendFormat: "Format: checks the SSS1 prefix, characters and length. For ✕, copy the " +
+        "complete string from the certificate again.",
+      restoreLegendCrc: "CRC: a check value for input errors. For ✕, check for missing or mistyped characters, past" +
+        "e the share again or rescan its QR code.",
+      restoreLegendSet: "Set ID: identifies shares created together. It is compared with the first successfully par" +
+        "sed share. For ✕, check whether different sets were mixed.",
+      restoreLegendThreshold: "k/n and length: checks the required number k, total number n and share data length. For ✕," +
+        " use the original certificates from the same set.",
+      restoreLegendX: "Share number x: the certificate No. Entering one number twice is a duplicate. Remove the d" +
+        "uplicate line and add a different share number if needed.",
+      restoreLegendSymbols: "✓ means that check passed, ✕ needs attention, and — means an earlier check stopped further" +
+        " checks. CRC and fingerprints do not authenticate the creator or rule out deliberate chang" +
+        "es.",
+      restoreRevealHelp: "The secret stays concealed after verification. Select Show to reveal it and Hide to concea" +
+        "l it again. BIP-39 shows numbered words and original entropy. Select Clear all when finish" +
+        "ed.",
+      shareColumn: "Input order",
+      thresholdColumn: "k/n and length",
+      xColumn: "Share number x",
+      noShares: "No shares entered. Paste an entire SSS1- string or scan a certificate QR code.",
+      mixed: "Could not check the shares. Confirm that each input line is a complete share from the same" +
+        " set.",
+      invalidShares: "Restoration stopped. Check the ✕ marks and explanations below, correct the affected shares" +
+        ", then check again.",
+      fingerprintBad: "The restored fingerprint (a content check value) did not match. Shares may have been chang" +
+        "ed or mixed from different secrets. No value is shown. Check the original certificates and" +
+        " read them again.",
+      restoredReady: "The restored fingerprint (a content check value) matched. The secret is concealed. Select " +
+        "Show to reveal it.",
+      cameraRunning: "Keep the whole certificate QR code in view. The camera stops after reading one share.",
+      cameraRead: "One share was added and checked automatically. Select Scan with camera again to add anothe" +
+        "r.",
+      cameraStopped: "Camera stopped. Shares already added remain in the input.",
+      cameraInvalid: "This QR code is not a valid SSS1 share. Use a Scatter Seeds certificate or paste its share" +
+        " string.",
+      rowFormat: "Cannot read the format. Copy the whole string from SSS1- to the end onto one line.",
+      rowVersion: "This share version is not supported. Check the tool and recovery instructions used to crea" +
+        "te it.",
+      rowCrc: "CRC did not match. Paste the share from the certificate again or rescan its QR code.",
+      rowSet: "The set ID differs from the first valid share. Collect certificates from the same set.",
+      rowThreshold: "The required count, total count or data length is invalid or inconsistent. Check the origi" +
+        "nal certificate.",
+      rowX: "The share number is out of range. Read the entire string from the certificate again.",
+      rowDuplicate: "This share number was already entered. Remove the duplicate line and add a different numbe" +
+        "r if needed.",
+      rowExtra: "This share disagrees with the result from the first k shares. Check the original certifica" +
+        "te. This result alone cannot identify which share was deliberately changed.",
+      restoreSummary: (id, k, n, count) => `Set ID ${id}: ${count} entered / ${k} required (${n} created).`,
+      restoreRowIssue: (index, message) => `Input order ${index}: ${message}`,
       close: 'Close'
     }
   });

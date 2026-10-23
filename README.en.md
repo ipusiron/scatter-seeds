@@ -68,9 +68,17 @@ The “?” button opens help with each tab, a practice exercise, use cases and 
 
 English BIP-39 accepts 12, 15, 18, 21 or 24 words. Input is normalized with NFKD, lowercasing and whitespace cleanup, then checked against the word list and checksum. Four-letter abbreviations are rejected. The checksum has only 4–8 bits: with 12 words, a wrong word can still pass about 1 in 16 times. Compare every word with the source paper. The 25th passphrase is outside this tool and must be stored separately. Restoration shows numbered words and the original entropy in hex.
 
+### Checks in the Restore tab
+
+Follow the three stages in the tab: gather shares, enter strings or scan QR codes, then review the checks. Enter one complete SSS1 string per line, joining any printed line wraps. Each camera scan appends one share and checks automatically.
+
+The table distinguishes input order from certificate share number x and shows the actual set ID and k/n values. Expand the check guide to read what CRC and the other checks mean. Errors include actions for the affected input, such as repasting or adding a different share. If extra shares disagree, the first k may still yield a displayable secret, but the interface states that the full set did not pass.
+
+Editing the input clears previous checks and the restored value. Select Check and restore again after manual changes. Clear all clears this tab’s input and results and stops the camera; it does not clear Split or the clipboard.
+
 ## 🔬 Format v1 and calculations
 
-The string is `SSS1-` followed by uppercase hex. Spaces, hyphens, line breaks and lowercase letters are tolerated when parsing; no automatic correction occurs. A share contains these bytes in order:
+The string is `SSS1-` followed by uppercase hex. Spaces, hyphens and lowercase letters are tolerated when parsing; no automatic correction occurs. In Restore and the Python script, newlines separate shares: put each complete share on one line. A share contains these bytes in order:
 
 | Field | Length | Meaning |
 |---|---:|---|

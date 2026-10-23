@@ -73,6 +73,84 @@ def help_check(page, name, width):
             assert page.locator('#help').evaluate('(e) => e === document.activeElement')
 
 
+
+def changed_header(share, offset, value):
+    body = bytearray.fromhex(share[5:])[:-4]
+    body[offset] = value
+    return 'SSS1-' + (body + zlib.crc32(body).to_bytes(4, 'big')).hex().upper()
+
+
+def restore_guidance_check(page, name, width):
+    shares = VECTORS['vectors'][0]['shares']
+    page.click('#tab-restore')
+    for language, theme in (('ja', 'light'), ('en', 'dark')):
+        if page.locator('html').get_attribute('lang') != language:
+            page.click('#language')
+        if page.locator('html').get_attribute('data-theme') != theme:
+            page.click('#theme')
+        def status(key, args=None):
+            return page.evaluate('([lang,key,args]) => { const v=ScatterMessages[lang][key]; '
+                                 'return typeof v === "function" ? v(...args) : v; }',
+                                 [language, key, args or []])
+        def check(values, key, args=None, issue=None):
+            page.fill('#restore-input', '\n'.join(values))
+            page.click('#restore-button')
+            assert page.locator('#restore-status').inner_text() == status(key, args)
+            if issue:
+                assert status(issue) in page.locator('#restore-issues').inner_text()
+            measure(page, (name, width, language, key))
+        if width == 320:
+            check([], 'noShares')
+            check(['SSS1-XX'], 'invalidShares', issue='rowFormat')
+            bad_crc = shares[0][:-1] + ('0' if shares[0][-1] != '0' else '1')
+            check([bad_crc], 'invalidShares', issue='rowCrc')
+            check([shares[0], shares[0]], 'invalidShares', issue='rowDuplicate')
+            check([shares[0], changed_header(shares[1], 1, 0)], 'invalidShares', issue='rowSet')
+            check([shares[0], changed_header(shares[1], 5, 3)], 'invalidShares', issue='rowThreshold')
+            check([changed_header(shares[0], 7, 0)], 'invalidShares', issue='rowX')
+            check([changed_header(shares[0], 0, 2)], 'invalidShares', issue='rowVersion')
+        check([shares[0]], 'need', [1])
+        assert page.locator('#restored').is_hidden()
+        assert '5EED1234' in page.locator('#restore-summary').inner_text()
+        check([shares[0], forged(shares[1], 3)], 'fingerprintBad')
+        assert page.locator('#restored').is_hidden()
+        check([shares[0], shares[1], forged(shares[2], 0)], 'inconsistent', [[3]], 'rowExtra')
+        assert page.locator('#restored').is_visible()
+        assert page.locator('#restored-value').is_hidden()
+        assert page.locator('#check-rows tr').nth(2).locator('td').nth(5).inner_text().endswith('3')
+        details = page.locator('.restore-check-help')
+        page.locator('#clear-restore').focus()
+        page.keyboard.press('Tab')
+        assert details.locator('summary').evaluate('(e) => e === document.activeElement')
+        if details.get_attribute('open') is None:
+            page.keyboard.press('Enter')
+        assert details.get_attribute('open') is not None
+        assert details.locator('summary').evaluate('(e) => getComputedStyle(e).outlineStyle') != 'none'
+        measure(page, (name, width, language, 'expanded check guidance'))
+        assert page.locator('#check-table').evaluate('(e) => e.scrollWidth <= e.parentElement.clientWidth')
+        check(shares[:2], 'restoredReady')
+        assert page.locator('#restore-issues').is_hidden()
+        assert page.locator('#check-rows tr').first.locator('td').nth(3).inner_text().endswith('5EED1234')
+        page.click('#reveal')
+        assert page.locator('#restored-value').inner_text() == 'Scatter Seeds'
+        page.click('#reveal')
+        assert page.locator('#restored-value').inner_text() == ''
+        page.click('#reveal')
+        page.fill('#restore-input', shares[0])
+        assert page.locator('#restore-status').inner_text() == status('restoreEdited')
+        assert page.locator('#restored').is_hidden()
+        assert page.locator('#restored-value').inner_text() == ''
+        assert page.locator('#restore-checks').is_hidden()
+        assert page.locator('#restore-summary').is_hidden()
+        page.click('#clear-restore')
+        assert page.locator('#restore-status').inner_text() == status('restoreCleared')
+        assert page.locator('#restore-input').input_value() == ''
+        assert page.locator('#restored-value').inner_text() == ''
+        # Return to a checked, concealed result for the remaining UI checks.
+        check(shares, 'restoredReady')
+    print(name, width, 'restore instructions, diagnostics, edits and clear OK', flush=True)
+
+
 def ordinary_browser(p, name):
     browser = getattr(p, name).launch(headless=True)
     for width in (320, 390, 1280):
@@ -141,6 +219,7 @@ def ordinary_browser(p, name):
             page.fill('#restore-input', '\n'.join(shares))
             page.click('#restore-button')
         measure(page, (name, width, 'restore'))
+        restore_guidance_check(page, name, width)
         page.click('#tab-guide')
         page.fill('#guide-k', '3')
         page.fill('#guide-n', '5')
@@ -198,6 +277,19 @@ with sync_playwright() as playwright:
                           'const count = stream.getVideoTracks().length; stream.getTracks().forEach(t => t.stop()); '
                           'return count; }')
     assert count == 1
-    print('firefox file:// getUserMedia: one live fake video track')
+    page.click('#tab-restore')
+    page.click('#camera-button')
+    page.wait_for_selector('#stop-camera', state='visible')
+    page.wait_for_function('() => document.querySelector("#camera-status").textContent === ScatterMessages.ja.cameraRunning')
+    page.click('#stop-camera')
+    assert page.locator('#camera-view').is_hidden()
+    assert page.locator('#camera-status').inner_text() == page.evaluate('() => ScatterMessages.ja.cameraStopped')
+    page.click('#camera-button')
+    page.wait_for_function('() => document.querySelector("#camera-status").textContent === ScatterMessages.ja.cameraRunning')
+    page.click('#tab-split')
+    page.click('#tab-restore')
+    assert page.locator('#camera-view').is_hidden()
+    assert page.locator('#camera-status').inner_text() == page.evaluate('() => ScatterMessages.ja.cameraStopped')
+    print('firefox file:// getUserMedia: live fake track; manual/tab stop messages OK')
     browser.close()
     camera_test(playwright)
