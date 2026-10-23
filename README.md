@@ -141,11 +141,19 @@ BIP-39では、英単語列から取り出した元の乱数（エントロピ�
 
 BIP-39は12・15・18・21・24語の英語を受け付けます。入力時にNFKD、小文字、空白を整え、語彙とチェックサムを確認します。最初の4文字だけの省略形は受け付けません。チェックサムは4〜8ビットなので、12語では1語を取り違えても約1/16の確率で通ります。元の紙と1語ずつ比べてください。25番目のパスフレーズは扱わないため、別に保管してください。復元結果には番号つきの語と元の乱数の16進を表示します。
 
+入力欄の下に現在のバイト数を表示します。BIP-39では、語とチェックサムの検査が通ると元の乱数のサイズを表示します。入力、種別、枚数、ラベル、日付を変更すると、前の証書は消えます。生成の検査中に変更した場合も処理を中止するため、新しい内容で「分ける」を押し直してください。
+
+各証書の「QRを拡大」で、その1枚を大きく表示できます。共有番号・セットID・必要枚数を確認し、「閉じる」またはEscapeキーで戻ります。QR画像の四辺には4セル分の白余白を含めています。
+
 ### 「戻す」タブでの確認
 
 タブ内の「共有を集める → 文字列またはQRを入力する → 検査結果を確認する」の順に操作します。証書のSSS1文字列は1枚につき1行で入力し、紙の途中の折り返しは1行につなげてください。カメラは1枚を追加するたび自動で検査します。
 
 検査表には入力順と証書の共有番号xを区別して表示し、セットID・k/nも実際の値を示します。「検査表の見方」を開くとCRCなどの意味を確認できます。異常があれば入力順ごとに貼り直し・別の共有の追加などを案内します。追加共有の不一致では先頭k枚の復元値を表示できますが、全体の検査は通っていないと表示します。
+
+復元したテキストは引用符付きのJSON形式で表示します。改行は「\n」、文字としてのバックスラッシュは「\\」と区別します。先頭のU+FEFFも保存し、表示では「\uFEFF」と示します。「表示」後の「元のテキストをコピー」は、表示用の引用符やエスケープを含めずにコピーします。バイト単位で保存する場合は、次のPythonの`--raw`を使ってください。
+
+カメラは開始待ちの間も停止できます。別のタブへ移るか「すべて消す」を押すと、開始待ちを含めて中止します。画面が非表示になった場合も停止します。
 
 入力を変更すると前の検査結果と復元値を消します。手入力の変更後は再び「検査して戻す」を押してください。「すべて消す」は戻すタブ内の入力・結果を消し、カメラを止めます。分けるタブやクリップボードの内容は消しません。
 
@@ -177,13 +185,33 @@ CRCは書き写しの誤りを見つけます。指紋が一致しなければ�
 
 リポジトリーのZIP、手順書の印刷、英語BIP-39語彙の`test/fixtures/bip39-english.txt`を共有と別に保管してください。下のコードを`restore.py`として保存し、オフライン端末のPython 3.10以降で実行できます。標準ライブラリーだけを使います。共有は標準入力から1行ずつ渡し、検査が通るまでは秘密を出しません。コマンド履歴に共有を直接書かないでください。
 
+通常のテキスト出力は、ブラウザーと同じ引用符付きJSON形式です。標準出力の文字コードはUTF-8です。元のテキストをUTF-8のバイト列として保存する場合は`--raw`を指定します。先頭のBOMと元の末尾改行を保ち、改行を追加しません。`--raw`はテキスト種別だけに使えます。
+
+BashまたはWindowsのコマンドプロンプトで実行する例です。
+
+```sh
+python restore.py --raw < shares.txt > restored.txt
+```
+
+Windows PowerShellでは、次のようにコマンドプロンプト経由で入出力を渡します。PowerShellの文字列変換を通さずに保存できます。
+
+```powershell
+cmd /d /c "python restore.py --raw < shares.txt > restored.txt"
+```
+
+restored.txtには秘密が平文で保存されます。オフライン端末の保存先を選び、同名の既存ファイルを上書きしないようにしてください。復元エラー時は秘密を出力せず、終了コードが0以外になります。
+
 ```python
 """Restore Scatter Seeds v1 shares from stdin using only Python's standard library.
 
 Run offline: python restore.py < shares.txt
 One complete SSS1 share per line. No data is written to disk.
+Text output is a quoted JSON string encoded as UTF-8.
+Use --raw for exact restored text bytes, with no added newline.
 """
+import argparse
 import hashlib
+import json
 import sys
 import zlib
 from pathlib import Path
@@ -284,26 +312,36 @@ def mnemonic(entropy):
 
 
 def safe_text(value):
-    return ''.join(f'\\u{ord(char):04X}' if ord(char) < 32 or 0x7F <= ord(char) <= 0x9F or
-                   0x202A <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 else char
-                   for char in value)
+    """Return unambiguous JSON text while exposing invisible control characters."""
+    quoted = json.dumps(value, ensure_ascii=False)
+    return ''.join(f'\\u{ord(char):04X}' if 0x7F <= ord(char) <= 0x9F or
+                   0x2028 <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 or
+                   ord(char) == 0xFEFF else char for char in quoted)
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--raw', action='store_true',
+                        help='write text secrets as exact UTF-8 bytes, without an added newline')
+    args = parser.parse_args()
     try:
         kind, secret, outside = restore(sys.stdin)
+        if args.raw and kind != 1:
+            raise ValueError('--raw requires a text secret; omit --raw for bytes or BIP-39')
         if kind == 1:
-            output = safe_text(secret.decode('utf-8', errors='strict'))
+            decoded = secret.decode('utf-8', errors='strict')
+            output = secret if args.raw else (safe_text(decoded) + '\n').encode('utf-8')
         elif kind == 2:
-            output = secret.hex().upper()
+            output = (secret.hex().upper() + '\n').encode('utf-8')
         else:
-            output = mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper()
+            output = (mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper() + '\n').encode('utf-8')
+        if outside:
+            print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
+        sys.stdout.buffer.write(output)
+        sys.stdout.buffer.flush()
     except (ValueError, UnicodeError, OSError) as error:
         print('Restore failed:', error, file=sys.stderr)
         return 1
-    if outside:
-        print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
-    print(output)
     return 0
 
 
@@ -354,6 +392,8 @@ if __name__ == '__main__':
 
 ## 🧪 テスト
 
+追加の回帰検査は`python test/improvements.browser.py`で実行します。既存のPython Playwright環境を使い、日英・ライト／ダーク・幅320/1280pxで入力バイト数、旧証書の無効化、復元テキスト、QR拡大、合成映像によるカメラの中止を検査します。実機の読み取り性能を測るテストではありません。
+
 Node 22以降で`npm test`を実行します。追加パッケージはありません。GF(2⁸)の65,536通りの掛け算、255個の逆元、参照共有3件、BIP-39公式値、CRC・指紋・余分な共有、全k枚の組、QR版、CSPと同梱ファイルのハッシュ、READMEのPythonスクリプトを検査します。`python test/interface.browser.py`はPlaywrightのChromiumとFirefoxで`file://`、320/390/1280px、印刷、復元、カメラを確認します。ブラウザーテストにはPython Playwright・pypdf・ffmpegが必要です。GitHub ActionsはpushとPRでNodeテストを実行します。
 
 ## 📁 ディレクトリー構造
@@ -384,6 +424,8 @@ scatter-seeds/                       # ツール本体
 │   ├── static.test.js               # CSPと同梱ファイル
 │   ├── contrast.test.js             # 明暗の文字コントラスト
 │   ├── format.test.js               # 可読なソースの行数と行長
+│   ├── restore-output.test.js        # PythonのUTF-8表示と元データ出力の検証
+│   ├── improvements.browser.py       # 入力変更・カメラ中止・QR拡大・復元表示の回帰検証
 │   ├── readme.test.js               # READMEとPython復元
 │   ├── interface.browser.py         # file://の実測
 │   └── fixtures/                    # 固定の参照データ

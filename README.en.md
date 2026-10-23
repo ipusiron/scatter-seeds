@@ -111,6 +111,10 @@ The “?” button opens help with each tab, a practice exercise, use cases and 
 
 English BIP-39 accepts 12, 15, 18, 21 or 24 words. Input is normalized with NFKD, lowercasing and whitespace cleanup, then checked against the word list and checksum. Four-letter abbreviations are rejected. The checksum has only 4–8 bits: with 12 words, a wrong word can still pass about 1 in 16 times. Compare every word with the source paper. The 25th passphrase is outside this tool and must be stored separately. Restoration shows numbered words and the original entropy in hex.
 
+The input counter shows the current byte size, or the original entropy size after BIP-39 validation. Changing the input, type, counts, label or date removes previous certificates and cancels ongoing subset verification. Select Split again for the new values.
+
+Select Enlarge QR on a certificate to view that one share at a larger size. Check its share number, set ID and required count, then use Close or Escape to return. Each QR image includes a white margin of four modules on all sides.
+
 ### Checks in the Restore tab
 
 Follow the three stages in the tab: gather shares, enter strings or scan QR codes, then review the checks. Enter one complete SSS1 string per line, joining any printed line wraps. Each camera scan appends one share and checks automatically.
@@ -118,6 +122,10 @@ Follow the three stages in the tab: gather shares, enter strings or scan QR code
 The table distinguishes input order from certificate share number x and shows the actual set ID and k/n values. Expand the check guide to read what CRC and the other checks mean. Errors include actions for the affected input, such as repasting or adding a different share. If extra shares disagree, the first k may still yield a displayable secret, but the interface states that the full set did not pass.
 
 Editing the input clears previous checks and the restored value. Select Check and restore again after manual changes. Clear all clears this tab’s input and results and stops the camera; it does not clear Split or the clipboard.
+
+Restored text is displayed as a quoted JSON string: a newline appears as "\n", while a literal backslash appears as "\\". A leading U+FEFF is preserved and displayed as "\uFEFF". After selecting Show, Copy original text copies the text without the display quotes or escapes. Use Python --raw, described below, to save the exact UTF-8 bytes.
+
+You can stop the camera while it is starting. Switching tabs or clearing Restore also cancels pending camera requests. The camera stops when the page becomes hidden.
 
 ## 🔬 Format v1 and calculations
 
@@ -147,13 +155,33 @@ CRC catches transcription errors. A fingerprint mismatch stops secret display. I
 
 Keep a repository ZIP, the printed instruction page and `test/fixtures/bip39-english.txt` separately from the shares. Save the code below as `restore.py` and run it offline with Python 3.10 or later. It uses only the standard library. Feed one complete share per stdin line; it prints no secret until checks pass. Do not put shares directly in your shell history.
 
+The default text output uses the same quoted JSON form as the browser and is written in UTF-8. Use --raw to save the original UTF-8 bytes. It preserves a leading BOM and any original trailing newline without adding a newline. This option accepts text secrets only.
+
+In Bash or Windows Command Prompt:
+
+```sh
+python restore.py --raw < shares.txt > restored.txt
+```
+
+In Windows PowerShell, pass redirection through Command Prompt to avoid PowerShell text conversion:
+
+```powershell
+cmd /d /c "python restore.py --raw < shares.txt > restored.txt"
+```
+
+restored.txt contains the secret in plain text. Choose a location on your offline device and avoid overwriting an existing file with the same name. On restoration errors, no secret is written and the exit code is nonzero.
+
 ```python
 """Restore Scatter Seeds v1 shares from stdin using only Python's standard library.
 
 Run offline: python restore.py < shares.txt
 One complete SSS1 share per line. No data is written to disk.
+Text output is a quoted JSON string encoded as UTF-8.
+Use --raw for exact restored text bytes, with no added newline.
 """
+import argparse
 import hashlib
+import json
 import sys
 import zlib
 from pathlib import Path
@@ -254,26 +282,36 @@ def mnemonic(entropy):
 
 
 def safe_text(value):
-    return ''.join(f'\\u{ord(char):04X}' if ord(char) < 32 or 0x7F <= ord(char) <= 0x9F or
-                   0x202A <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 else char
-                   for char in value)
+    """Return unambiguous JSON text while exposing invisible control characters."""
+    quoted = json.dumps(value, ensure_ascii=False)
+    return ''.join(f'\\u{ord(char):04X}' if 0x7F <= ord(char) <= 0x9F or
+                   0x2028 <= ord(char) <= 0x202E or 0x2066 <= ord(char) <= 0x2069 or
+                   ord(char) == 0xFEFF else char for char in quoted)
 
 
 def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--raw', action='store_true',
+                        help='write text secrets as exact UTF-8 bytes, without an added newline')
+    args = parser.parse_args()
     try:
         kind, secret, outside = restore(sys.stdin)
+        if args.raw and kind != 1:
+            raise ValueError('--raw requires a text secret; omit --raw for bytes or BIP-39')
         if kind == 1:
-            output = safe_text(secret.decode('utf-8', errors='strict'))
+            decoded = secret.decode('utf-8', errors='strict')
+            output = secret if args.raw else (safe_text(decoded) + '\n').encode('utf-8')
         elif kind == 2:
-            output = secret.hex().upper()
+            output = (secret.hex().upper() + '\n').encode('utf-8')
         else:
-            output = mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper()
+            output = (mnemonic(secret) + '\nEntropy (hex): ' + secret.hex().upper() + '\n').encode('utf-8')
+        if outside:
+            print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
+        sys.stdout.buffer.write(output)
+        sys.stdout.buffer.flush()
     except (ValueError, UnicodeError, OSError) as error:
         print('Restore failed:', error, file=sys.stderr)
         return 1
-    if outside:
-        print('Inconsistent extra shares: ' + ', '.join(map(str, outside)), file=sys.stderr)
-    print(output)
     return 0
 
 
@@ -324,6 +362,8 @@ The author does not encourage misuse.
 
 ## 🧪 Tests
 
+Run `python test/improvements.browser.py` for the added regression checks using an existing Python Playwright environment. It checks byte counts, stale certificate invalidation, restored text, the QR dialog and synthetic camera cancellation in both languages and themes at widths of 320 and 1280 pixels. It does not measure physical camera performance.
+
 Run `npm test` with Node 22 or later; there are no packages to install. It checks all 65,536 GF(2⁸) multiplication pairs, 255 inverses, three reference share sets, official BIP-39 values, CRC, fingerprints, extra shares, all threshold subsets, QR versions, CSP, copied-file hashes and the README Python script. `python test/interface.browser.py` checks Chromium and Firefox on `file://` at 320/390/1280px, printing, restoration and camera behavior. The browser test needs Python Playwright, pypdf and ffmpeg. GitHub Actions runs the Node tests on pushes and PRs.
 
 ## 📁 Directory structure
@@ -354,6 +394,8 @@ scatter-seeds/                       # Tool root
 │   ├── static.test.js               # CSP and bundled files
 │   ├── contrast.test.js             # Light and dark text contrast
 │   ├── format.test.js               # Readable source line counts and lengths
+│   ├── restore-output.test.js        # Python UTF-8 display and exact raw output checks
+│   ├── improvements.browser.py       # Input, camera cancellation, QR dialog and text regression checks
 │   ├── readme.test.js               # README and Python restoration
 │   ├── interface.browser.py         # file:// measurements
 │   └── fixtures/                    # Pinned reference data
