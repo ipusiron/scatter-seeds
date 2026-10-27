@@ -26,13 +26,16 @@ test('G: core modules remain DOM independent and page has strict CSP', () => {
   assert.match(html, /<meta name="referrer" content="no-referrer">/);
   assert.doesNotMatch(html, /\son\w+=|\sstyle=/i);
   for (const file of ['sss-core.js', 'bip39.js']) assert.doesNotMatch(read(file), /\bdocument\b|\bwindow\b|\blocalStorage\b/);
-  for (const file of ['sss-core.js', 'bip39.js', 'app.js']) {
+  for (const file of ['sss-core.js', 'bip39.js', 'app.js', 'theme-init.js']) {
     assert.doesNotMatch(read(file), /Math\.random|XMLHttpRequest|WebSocket|innerHTML|\bfetch\s*\(/);
   }
   const app = read('app.js');
   assert.deepEqual([...app.matchAll(/localStorage\.(?:getItem|setItem)\('scatter-seeds\.' \+ key/g)].length, 2);
+  // The saved theme is read by theme-init.js in <head>; app.js keeps the language read and both saves.
   assert.deepEqual([...app.matchAll(/\b(?:save|stored)\('([^']+)'/g)].map(match => match[1]).sort(),
-    ['language', 'language', 'theme', 'theme']);
+    ['language', 'language', 'theme']);
+  assert.deepEqual([...read('theme-init.js').matchAll(/localStorage\.(?:getItem|setItem)\('([^']+)'/g)].map(match => match[1]),
+    ['scatter-seeds.theme']);
 });
 test('G: Japanese and English message keys match', () => {
   const messages = require('../messages.js');

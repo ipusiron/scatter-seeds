@@ -372,6 +372,7 @@ Run `npm test` with Node 22 or later; there are no packages to install. It check
 scatter-seeds/                       # Tool root
 ├── index.html                       # Three-tab interface and CSP
 ├── style.css                        # Screen and print certificate styling
+├── theme-init.js                    # Sets the theme before the first paint
 ├── app.js                           # Inputs, verification, restoration, camera
 ├── sss-core.js                      # GF(2⁸), share v1, CRC, restoration
 ├── sha256-core.js                   # Day118 SHA-256 implementation
@@ -392,6 +393,7 @@ scatter-seeds/                       # Tool root
 ├── test/                            # Node and browser tests
 │   ├── core.test.js                 # Reference values and arithmetic
 │   ├── static.test.js               # CSP and bundled files
+│   ├── theme-init.test.js           # Initial theme choice and load position
 │   ├── contrast.test.js             # Light and dark text contrast
 │   ├── format.test.js               # Readable source line counts and lengths
 │   ├── restore-output.test.js        # Python UTF-8 display and exact raw output checks
