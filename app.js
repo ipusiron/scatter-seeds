@@ -6,7 +6,8 @@
   const save = (key, value) => { try { localStorage.setItem('scatter-seeds.' + key, value); } catch (_) { /* storage unavailable */ } };
   const langParam = new URLSearchParams(location.search).get('lang');
   let language = ['ja', 'en'].includes(langParam) ? langParam : stored('language') || (navigator.language.startsWith('ja') ? 'ja' : 'en');
-  let theme = stored('theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  // theme-init.js sets data-theme in <head> before the first paint; keep that value here.
+  let theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'light';
   const tabs = ['split', 'restore', 'guide'];
   let active = 'split';
   let shares = [];

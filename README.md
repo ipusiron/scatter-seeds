@@ -402,6 +402,7 @@ Node 22以降で`npm test`を実行します。追加パッケージはありま
 scatter-seeds/                       # ツール本体
 ├── index.html                       # 3タブの画面とCSP
 ├── style.css                        # 証書の画面・印刷スタイル
+├── theme-init.js                    # 最初の描画の前に明暗を決める
 ├── app.js                           # 入力、全組検査、復元、カメラ
 ├── sss-core.js                      # GF(2⁸)、共有v1、CRC、復元
 ├── sha256-core.js                   # Day118のSHA-256実装
@@ -422,6 +423,7 @@ scatter-seeds/                       # ツール本体
 ├── test/                            # Node・ブラウザーテスト
 │   ├── core.test.js                 # 既知の値と計算
 │   ├── static.test.js               # CSPと同梱ファイル
+│   ├── theme-init.test.js           # 明暗の初期判定と読み込み位置
 │   ├── contrast.test.js             # 明暗の文字コントラスト
 │   ├── format.test.js               # 可読なソースの行数と行長
 │   ├── restore-output.test.js        # PythonのUTF-8表示と元データ出力の検証
