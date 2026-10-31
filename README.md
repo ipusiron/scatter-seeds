@@ -360,6 +360,7 @@ if __name__ == '__main__':
 | 紙とQR | k・セットID・CRCを含む独自書式で、全組を復元検査 | [Banana Split](https://github.com/paritytech/banana_split)は秘密を包んで紙とQRへ分ける。 |
 | 検査 | 指紋で食い違いを検出し、余分な共有も検査 | [secrets.js](https://github.com/grempe/secrets.js)・Vault・ssssは設計や書式が異なる。 |
 | ツール消失への備え | 印刷用手順書と標準ライブラリーだけのPythonスクリプト | 利用者が手順を手元に残せる。 |
+| 組み合わせ | 紙の回復コードを分けて保管する | [Day127 Account Domino Mapper](https://ipusiron.github.io/account-domino-mapper/)は、どの復旧の線を紙の回復コードへ付け替えるかを、攻撃と閉め出しの前後で比べる教材。 |
 
 調査範囲は限られます。独自書式はSLIP-39対応機器と互換性がありません。
 

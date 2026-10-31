@@ -330,6 +330,7 @@ To recover English BIP-39 words, place the word list in its repository location.
 | Paper and QR | Custom format with k, set ID, CRC and all-subset checks | [Banana Split](https://github.com/paritytech/banana_split) wraps a secret before splitting it for paper and QR. |
 | Checks | Fingerprint and checks of extra shares | [secrets.js](https://github.com/grempe/secrets.js), Vault and ssss have different designs and formats. |
 | Tool loss | Printable instructions and a standard-library-only Python script | The user can retain an independent recovery method. |
+| Combination | Keeps paper recovery codes split across places | [Day127 Account Domino Mapper](https://ipusiron.github.io/account-domino-mapper/) is a teaching aid that compares the attack and the lockout before and after moving a recovery line to paper recovery codes. |
 
 The prior-art search is limited. This custom format is incompatible with SLIP-39 devices.
 
