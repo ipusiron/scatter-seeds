@@ -357,6 +357,7 @@ if __name__ == '__main__':
 |---|---|---|
 | 目的 | 本物の秘密を紙に分けて保管し、復元を確認する道具 | [Day123 ShamirSharing CipherLab](https://ipusiron.github.io/shamir-sharing-cipherlab/)はGF(p)・GF(2⁸)と落とし穴を学ぶ教材。 |
 | 方式 | シャミアの秘密分散だけ | [Day070 VisualCryptography CipherLab](https://ipusiron.github.io/visual-cryptography-cipherlab/)は画像を重ねる視覚暗号の教材。 |
+| 重ねて戻す | 共有は数値計算で戻す | [Day125 Overlay QR Shares](https://ipusiron.github.io/overlay-qr-shares/)は秘密のQRを視覚暗号で2〜5枚に分け、必要枚数を重ねてカメラで読み取るツール。計算で戻す本ツールと、紙を重ねて戻す方式を比べられる。 |
 | 紙とQR | k・セットID・CRCを含む独自書式で、全組を復元検査 | [Banana Split](https://github.com/paritytech/banana_split)は秘密を包んで紙とQRへ分ける。 |
 | 検査 | 指紋で食い違いを検出し、余分な共有も検査 | [secrets.js](https://github.com/grempe/secrets.js)・Vault・ssssは設計や書式が異なる。 |
 | ツール消失への備え | 印刷用手順書と標準ライブラリーだけのPythonスクリプト | 利用者が手順を手元に残せる。 |

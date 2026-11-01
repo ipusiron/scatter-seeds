@@ -327,6 +327,7 @@ To recover English BIP-39 words, place the word list in its repository location.
 |---|---|---|
 | Purpose | A practical paper backup and restoration tool for real secrets | [Day123 ShamirSharing CipherLab](https://ipusiron.github.io/shamir-sharing-cipherlab/) teaches GF(p), GF(2⁸) and pitfalls. |
 | Method | Shamir secret sharing only | [Day070 VisualCryptography CipherLab](https://ipusiron.github.io/visual-cryptography-cipherlab/) teaches overlay-based visual cryptography. |
+| Overlay recovery | Shares are reconstructed numerically | [Day125 Overlay QR Shares](https://ipusiron.github.io/overlay-qr-shares/) splits a secret QR into 2–5 visual cryptography shares and reads the required overlay with a camera. Compare numerical reconstruction here with recovery by overlaying paper. |
 | Paper and QR | Custom format with k, set ID, CRC and all-subset checks | [Banana Split](https://github.com/paritytech/banana_split) wraps a secret before splitting it for paper and QR. |
 | Checks | Fingerprint and checks of extra shares | [secrets.js](https://github.com/grempe/secrets.js), Vault and ssss have different designs and formats. |
 | Tool loss | Printable instructions and a standard-library-only Python script | The user can retain an independent recovery method. |
